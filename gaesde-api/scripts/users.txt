@@ -1,0 +1,46 @@
+TOKEN=$(cat .token)
+
+TOKEN=$(curl -s -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@gaesde.com","password":"Admin@123456"}' \
+  | jq -r '.access_token')
+
+echo "Token: $TOKEN"
+
+curl -X GET http://localhost:3000/users/profile -H "Authorization: Bearer $TOKEN"
+curl -X GET http://localhost:3000/users/users -H "Authorization: Bearer $TOKEN"
+
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@gaesde.com",
+    "password": "Admin@123456"
+  }'
+curl -X POST http://localhost:3000/users/avatar \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@./eduardo.jpeg"
+
+curl -X PUT http://localhost:3000/users/6a483f748470f3e0482cba57 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Novo Nome do Administrador",
+    "bio": "Sou o administrador do sistema GAESDE"
+  }'
+
+# Pegar o ID do admin (já temos do profile)
+USER_ID="6a483f748470f3e0482cba57"
+
+# Fazer update com arquivo
+curl -X PUT "http://localhost:3000/users/$USER_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "name=Administrador Master GAESDE" \
+  -F "bio=Administrador do sistema GAESDE - Especialista em gestão de projetos" \
+  -F "file=@./eduardo.jpeg"
+
+curl -X POST http://localhost:3000/users/register \
+  -F "email=novo.usuario@email.com" \
+  -F "password=Senha123" \
+  -F "name=Novo Usuário" \
+  -F "bio=Desenvolvedor Full Stack" \
+  -F "file=@./eduardo.jpeg"

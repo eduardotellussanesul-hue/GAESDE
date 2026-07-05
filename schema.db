@@ -1,0 +1,235 @@
+// =============================================
+// 1. PILAR DE USUÁRIOS E PERMISSÕES (IAM)
+// =============================================
+Table Users {
+  _id objectid [primary key, note: 'MongoDB ObjectId']
+  name varchar [not null]
+  email varchar [unique, not null]
+  password_hash varchar [not null, note: 'Hash com bcrypt/argon2']
+  avatar_url varchar
+  bio text
+  email_verified_at timestamp
+  last_login_at timestamp
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+  deleted_at timestamp [note: 'Soft delete para auditoria e LGPD']
+}
+
+Table Roles {
+  _id objectid [primary key]
+  name varchar [not null, note: 'admin, instructor, student']
+  slug varchar [unique, not null]
+  description text
+  created_at timestamp [default: 'now()']
+}
+
+// Índice composto único: (user_id, role_id)
+Table UserRoles {
+  _id objectid [primary key]
+  user_id objectid [ref: > Users._id, not null]
+  role_id objectid [ref: > Roles._id, not null]
+  created_at timestamp [default: 'now()']
+}
+
+// =============================================
+// 2. CATÁLOGO E ESTRUTURA CURRICULAR
+// =============================================
+Table Categories {
+  _id objectid [primary key]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  parent_id objectid [ref: > Categories._id, note: 'Auto-relacionamento p/ subcategorias']
+  created_at timestamp [default: 'now()']
+}
+
+Table Courses {
+  _id objectid [primary key]
+  title varchar [not null]
+  slug varchar [unique, not null]
+  description text
+  cover_image varchar
+  price decimal [note: '0.00 para cursos gratuitos']
+  status varchar [not null, default: 'draft', note: 'draft, review, published, archived']
+  level varchar [not null, note: 'beginner, intermediate, advanced']
+  instructor_id objectid [ref: > Users._id, not null]
+  category_id objectid [ref: > Categories._id]
+  published_at timestamp
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table Modules {
+  _id objectid [primary key]
+  course_id objectid [ref: > Courses._id, not null]
+  title varchar [not null]
+  description text
+  order_index int [not null, note: 'Ordem de exibição no curso']
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+}
+
+// Tabela mestra polimórfica. Dados específicos ficam nas tabelas filhas.
+Table Contents {
+  _id objectid [primary key]
+  module_id objectid [ref: > Modules._id, not null]
+  title varchar [not null]
+  type varchar [not null, note: 'video, text, pdf, quiz, assignment']
+  order_index int [not null]
+  is_free_preview boolean [default: false]
+  duration_seconds int [note: 'Duração apenas para vídeos']
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+}
+
+Table ContentVideos {
+  _id objectid [primary key]
+  content_id objectid [ref: > Contents._id, unique, not null]
+  video_url varchar [not null, note: 'Vimeo, Youtube ou S3']
+  video_duration_seconds int
+  created_at timestamp [default: 'now()']
+}
+
+Table ContentTexts {
+  _id objectid [primary key]
+  content_id objectid [ref: > Contents._id, unique, not null]
+  body text [not null, note: 'Conteúdo em Markdown ou HTML']
+  created_at timestamp [default: 'now()']
+}
+
+Table ContentPdfs {
+  _id objectid [primary key]
+  content_id objectid [ref: > Contents._id, unique, not null]
+  file_url varchar [not null]
+  file_size_bytes int
+  created_at timestamp [default: 'now()']
+}
+
+// =============================================
+// 3. MATRÍCULAS E PROGRESSO (JORNADA DO ALUNO)
+// =============================================
+// Índice composto único: (user_id, course_id)
+Table Enrollments {
+  _id objectid [primary key]
+  user_id objectid [ref: > Users._id, not null]
+  course_id objectid [ref: > Courses._id, not null]
+  status varchar [not null, default: 'pending_payment', note: 'pending_payment, active, dropped, completed']
+  progress_percentage decimal [note: 'Calculado via Job assíncrona']
+  enrolled_at timestamp [default: 'now()']
+  expires_at timestamp [note: 'Para acessos por assinatura']
+  last_accessed_at timestamp
+}
+
+// Índice composto único: (user_id, content_id)
+Table ContentCompletions {
+  _id objectid [primary key]
+  user_id objectid [ref: > Users._id, not null]
+  content_id objectid [ref: > Contents._id, not null]
+  completed_at timestamp [default: 'now()']
+}
+
+// =============================================
+// 4. QUIZZES E QUESTÕES (AVALIAÇÕES)
+// =============================================
+Table Quizzes {
+  _id objectid [primary key]
+  content_id objectid [ref: > Contents._id, unique, not null]
+  time_limit_minutes int [note: 'NULL = sem limite']
+  passing_score_percentage decimal [not null, default: 60.0]
+  attempts_allowed int [default: 1]
+  shuffle_questions boolean [default: false]
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+}
+
+Table Questions {
+  _id objectid [primary key]
+  quiz_id objectid [ref: > Quizzes._id, not null]
+  type varchar [not null, note: 'multiple_choice, true_false, essay, matching']
+  question_text text [not null]
+  points decimal [not null, default: 1.0]
+  order_index int [not null]
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+}
+
+Table QuestionOptions {
+  _id objectid [primary key]
+  question_id objectid [ref: > Questions._id, not null]
+  option_text text [not null]
+  is_correct boolean [not null, default: false]
+  created_at timestamp [default: 'now()']
+}
+
+// =============================================
+// 5. TENTATIVAS E SUBMISSÕES
+// =============================================
+Table QuizAttempts {
+  _id objectid [primary key]
+  quiz_id objectid [ref: > Quizzes._id, not null]
+  user_id objectid [ref: > Users._id, not null]
+  enrollment_id objectid [ref: > Enrollments._id, not null]
+  status varchar [default: 'in_progress', note: 'in_progress, finished, abandoned']
+  started_at timestamp [default: 'now()']
+  submitted_at timestamp
+  total_score decimal
+  is_passed boolean
+  created_at timestamp [default: 'now()']
+}
+
+Table UserAnswers {
+  _id objectid [primary key]
+  attempt_id objectid [ref: > QuizAttempts._id, not null]
+  question_id objectid [ref: > Questions._id, not null]
+  selected_option_id objectid [ref: > QuestionOptions._id, note: 'Para questões objetivas']
+  text_response text [note: 'Para questões discursivas (Essay)']
+  is_correct boolean [note: 'Automático para MC; manual para Essay']
+  points_earned decimal [default: 0]
+  created_at timestamp [default: 'now()']
+}
+
+Table AssignmentSubmissions {
+  _id objectid [primary key]
+  content_id objectid [ref: > Contents._id, not null]
+  user_id objectid [ref: > Users._id, not null]
+  enrollment_id objectid [ref: > Enrollments._id, not null]
+  file_url varchar [not null]
+  submitted_at timestamp [default: 'now()']
+  grade decimal
+  instructor_feedback text
+  graded_at timestamp
+}
+
+// =============================================
+// 6. BÔNUS: AVALIAÇÕES, CERTIFICADOS E NOTIFICAÇÕES
+// =============================================
+// Índice composto único: (user_id, course_id)
+Table Reviews {
+  _id objectid [primary key]
+  course_id objectid [ref: > Courses._id, not null]
+  user_id objectid [ref: > Users._id, not null]
+  rating int [not null, note: 'De 1 a 5 estrelas']
+  comment text
+  created_at timestamp [default: 'now()']
+  updated_at timestamp
+}
+
+Table Certificates {
+  _id objectid [primary key]
+  enrollment_id objectid [ref: > Enrollments._id, not null]
+  user_id objectid [ref: > Users._id, not null]
+  certificate_url varchar [not null, note: 'URL do PDF gerado']
+  verification_code varchar [unique, not null, note: 'Código UUID público']
+  issued_at timestamp [default: 'now()']
+}
+
+Table Notifications {
+  _id objectid [primary key]
+  user_id objectid [ref: > Users._id, not null]
+  type varchar [not null, note: 'email, in_app']
+  title varchar [not null]
+  message text [not null]
+  read_at timestamp [note: 'NULL = não lida']
+  action_url varchar
+  created_at timestamp [default: 'now()']
+}

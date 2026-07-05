@@ -1,0 +1,48 @@
+# Criar role admin
+curl -X POST http://localhost:3000/roles \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Administrador",
+    "slug": "admin",
+    "description": "Administrador do sistema com acesso total"
+  }'
+
+# Criar role instructor
+curl -X POST http://localhost:3000/roles \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Instrutor",
+    "slug": "instructor",
+    "description": "Instrutor com permissão para gerenciar cursos"
+  }'
+
+# Criar role student
+curl -X POST http://localhost:3000/roles \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Aluno",
+    "slug": "student",
+    "description": "Aluno com acesso aos cursos"
+  }'
+curl -X GET http://localhost:3000/roles \
+  -H "Authorization: Bearer $TOKEN"
+
+ROLE_ID=$(curl -s -X GET http://localhost:3000/roles \
+  -H "Authorization: Bearer $TOKEN" \
+  | jq -r '.[] | select(.slug=="admin") | .id')
+
+echo "Role ID: $ROLE_ID"
+
+curl -X POST http://localhost:3000/user-roles/assign \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"userId\": \"$USER_ID\",
+    \"roleId\": \"$ROLE_ID\"
+  }"
+
+curl -X GET http://localhost:3000/user-roles/user/$USER_ID \
+  -H "Authorization: Bearer $TOKEN"

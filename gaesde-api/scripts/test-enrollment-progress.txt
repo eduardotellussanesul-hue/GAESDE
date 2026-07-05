@@ -1,0 +1,164 @@
+eduardo@eduardo-H61:~/Documentos/GAESDE/gaesde-api$ ./scripts/test-enrollment-progress.sh
+=========================================
+TESTE DE MATRÍCULA E PROGRESSO
+=========================================
+
+1. FAZENDO LOGIN COMO ADMIN
+✅ Login realizado
+
+2. CRIANDO CATEGORIA
+✅ Categoria criada: 6a4a8e2e6629f497a218e965
+
+3. CRIANDO CURSO
+✅ Curso criado: 6a4a8e2e6629f497a218e966
+
+4. CRIANDO MÓDULOS
+4.1 Criando Módulo 1: Fundamentos
+✅ Módulo 1 criado: 6a4a8e2e6629f497a218e967
+4.2 Criando Módulo 2: Banco de Dados
+✅ Módulo 2 criado: 6a4a8e2e6629f497a218e968
+4.3 Criando Módulo 3: Autenticação
+✅ Módulo 3 criado: 6a4a8e2e6629f497a218e969
+
+5. CRIANDO CONTEÚDOS DO MÓDULO 1
+5.1 Criando Conteúdo 1: Vídeo - Introdução
+✅ Conteúdo 1 criado: 6a4a8e2e6629f497a218e96a
+5.2 Criando Conteúdo 2: Texto - Conceitos
+✅ Conteúdo 2 criado: 6a4a8e2e6629f497a218e96c
+5.3 Criando Conteúdo 3: PDF - Material
+✅ Conteúdo 3 criado: 6a4a8e2e6629f497a218e96e
+
+6. CRIANDO CONTEÚDOS DO MÓDULO 2
+6.1 Criando Conteúdo 4: Vídeo - Mongoose
+✅ Conteúdo 4 criado: 6a4a8e2e6629f497a218e970
+
+7. CRIANDO USUÁRIO ALUNO
+✅ Aluno criado: 6a4a8e2e6629f497a218e972
+
+8. FAZENDO LOGIN DO ALUNO
+✅ Login do aluno realizado
+
+9. MATRICULANDO ALUNO NO CURSO
+{
+  "id": "6a4a8e2f6629f497a218e973",
+  "userId": "6a4a8e2e6629f497a218e972",
+  "courseId": "6a4a8e2e6629f497a218e966",
+  "status": "active",
+  "progressPercentage": 0,
+  "enrolledAt": "2026-07-05T17:02:39.173Z",
+  "lastAccessedAt": "2026-07-05T17:02:39.173Z",
+  "isActive": true,
+  "isCompleted": false,
+  "isExpired": false
+}
+✅ Matrícula criada: 6a4a8e2f6629f497a218e973
+
+10. VERIFICANDO MATRÍCULAS DO ALUNO
+[
+  {
+    "id": "6a4a8e2f6629f497a218e973",
+    "userId": "6a4a8e2e6629f497a218e972",
+    "courseId": "6a4a8e2e6629f497a218e966",
+    "status": "active",
+    "progressPercentage": 0,
+    "enrolledAt": "2026-07-05T17:02:39.258Z",
+    "lastAccessedAt": "2026-07-05T17:02:39.258Z",
+    "isActive": true,
+    "isCompleted": false,
+    "isExpired": false,
+    "course": {
+      "id": "6a4a8e2e6629f497a218e966",
+      "title": "NestJS Avançado - Curso Completo",
+      "slug": "nestjs-avancado-completo",
+      "level": "advanced"
+    }
+  }
+]
+
+11. MARCANDO CONTEÚDOS COMO COMPLETOS
+11.1 Marcando Conteúdo 1 como completo
+{
+  "id": "6a4a8e2f6629f497a218e974",
+  "userId": "6a4a8e2e6629f497a218e972",
+  "contentId": "6a4a8e2e6629f497a218e96a",
+  "completedAt": "2026-07-05T17:02:39.398Z",
+  "progressUpdated": true
+}
+11.2 Marcando Conteúdo 2 como completo
+{
+  "id": "6a4a8e2f6629f497a218e975",
+  "userId": "6a4a8e2e6629f497a218e972",
+  "contentId": "6a4a8e2e6629f497a218e96c",
+  "completedAt": "2026-07-05T17:02:39.567Z",
+  "progressUpdated": true
+}
+11.3 Marcando Conteúdo 3 como completo
+{
+  "id": "6a4a8e2f6629f497a218e976",
+  "userId": "6a4a8e2e6629f497a218e972",
+  "contentId": "6a4a8e2e6629f497a218e96e",
+  "completedAt": "2026-07-05T17:02:39.720Z",
+  "progressUpdated": true
+}
+
+12. VERIFICANDO PROGRESSO DO ALUNO
+{
+  "totalContents": 4,
+  "completedContents": 3,
+  "progressPercentage": 75,
+  "completedContentIds": [
+    "6a4a8e2e6629f497a218e96a",
+    "6a4a8e2e6629f497a218e96c",
+    "6a4a8e2e6629f497a218e96e"
+  ]
+}
+
+13. VERIFICANDO MATRÍCULA ATUALIZADA
+{
+  "id": "6a4a8e2f6629f497a218e973",
+  "userId": "6a4a8e2e6629f497a218e972",
+  "courseId": "6a4a8e2e6629f497a218e966",
+  "status": "active",
+  "progressPercentage": 75,
+  "enrolledAt": "2026-07-05T17:02:40.676Z",
+  "lastAccessedAt": "2026-07-05T17:02:40.676Z",
+  "isActive": true,
+  "isCompleted": false,
+  "isExpired": false
+}
+
+14. LISTANDO TODAS AS COMPLETIONS DO ALUNO
+[
+  {
+    "id": "6a4a8e2f6629f497a218e974",
+    "userId": "6a4a8e2e6629f497a218e972",
+    "contentId": "6a4a8e2e6629f497a218e96a",
+    "completedAt": "2026-07-05T17:02:40.709Z"
+  },
+  {
+    "id": "6a4a8e2f6629f497a218e975",
+    "userId": "6a4a8e2e6629f497a218e972",
+    "contentId": "6a4a8e2e6629f497a218e96c",
+    "completedAt": "2026-07-05T17:02:40.709Z"
+  },
+  {
+    "id": "6a4a8e2f6629f497a218e976",
+    "userId": "6a4a8e2e6629f497a218e972",
+    "contentId": "6a4a8e2e6629f497a218e96e",
+    "completedAt": "2026-07-05T17:02:40.709Z"
+  }
+]
+
+========================================
+ESTATÍSTICAS FINAIS
+========================================
+📊 Estatísticas:
+  Curso: NestJS Avançado
+  Total de módulos: 3
+  Conteúdos no Módulo 1: 3
+  Conteúdos completados: 3
+  Matrícula ID: 6a4a8e2f6629f497a218e973
+  Aluno: aluno.progresso@teste.com
+
+✅ TESTE CONCLUÍDO COM SUCESSO!
+=========================================

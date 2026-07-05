@@ -1,0 +1,253 @@
+eduardo@eduardo-H61:~/Documentos/GAESDE/gaesde-api$ ./scripts/test-quizzes.sh
+=========================================
+TESTE DE QUIZZES E QUESTÕES
+=========================================
+
+1. FAZENDO LOGIN COMO ADMIN
+✅ Login realizado
+
+2. CRIANDO CURSO E MÓDULO
+✅ Curso e módulo criados
+
+3. CRIANDO CONTEÚDO DO TIPO QUIZ
+✅ Conteúdo criado: 6a4a91d300320153e8f724aa
+
+4. CRIANDO QUIZ
+{
+  "id": "6a4a91d300320153e8f724ab",
+  "contentId": "6a4a91d300320153e8f724aa",
+  "timeLimitMinutes": 30,
+  "passingScorePercentage": 70,
+  "attemptsAllowed": 3,
+  "shuffleQuestions": true,
+  "createdAt": "2026-07-05T17:18:11.567Z",
+  "updatedAt": "2026-07-05T17:18:11.567Z"
+}
+✅ Quiz criado: 6a4a91d300320153e8f724ab
+
+5. CRIANDO QUESTÕES
+5.1 Questão 1: Múltipla Escolha
+{
+  "id": "6a4a91d300320153e8f724ac",
+  "quizId": "6a4a91d300320153e8f724ab",
+  "type": "multiple_choice",
+  "questionText": "Qual é a capital do Brasil?",
+  "points": 2,
+  "orderIndex": 0,
+  "createdAt": "2026-07-05T17:18:11.644Z",
+  "updatedAt": "2026-07-05T17:18:11.644Z"
+}
+5.2 Questão 2: Verdadeiro/Falso
+{
+  "id": "6a4a91d300320153e8f724ad",
+  "quizId": "6a4a91d300320153e8f724ab",
+  "type": "true_false",
+  "questionText": "A Terra é plana?",
+  "points": 1,
+  "orderIndex": 1,
+  "createdAt": "2026-07-05T17:18:11.714Z",
+  "updatedAt": "2026-07-05T17:18:11.714Z"
+}
+5.3 Questão 3: Múltipla Escolha
+{
+  "id": "6a4a91d300320153e8f724ae",
+  "quizId": "6a4a91d300320153e8f724ab",
+  "type": "multiple_choice",
+  "questionText": "Quais são linguagens de programação?",
+  "points": 3,
+  "orderIndex": 2,
+  "createdAt": "2026-07-05T17:18:11.786Z",
+  "updatedAt": "2026-07-05T17:18:11.786Z"
+}
+
+6. ADICIONANDO OPÇÕES
+6.1 Opções da Questão 1
+{
+  "id": "6a4a91d300320153e8f724af",
+  "questionId": "6a4a91d300320153e8f724ac",
+  "optionText": "Brasília",
+  "isCorrect": true,
+  "createdAt": "2026-07-05T17:18:11.859Z"
+}
+{
+  "id": "6a4a91d300320153e8f724b0",
+  "questionId": "6a4a91d300320153e8f724ac",
+  "optionText": "São Paulo",
+  "isCorrect": false,
+  "createdAt": "2026-07-05T17:18:11.929Z"
+}
+6.2 Opções da Questão 2
+{
+  "id": "6a4a91d300320153e8f724b1",
+  "questionId": "6a4a91d300320153e8f724ad",
+  "optionText": "Verdadeiro",
+  "isCorrect": false,
+  "createdAt": "2026-07-05T17:18:11.998Z"
+}
+{
+  "id": "6a4a91d400320153e8f724b2",
+  "questionId": "6a4a91d300320153e8f724ad",
+  "optionText": "Falso",
+  "isCorrect": true,
+  "createdAt": "2026-07-05T17:18:12.065Z"
+}
+6.3 Opções da Questão 3
+{
+  "id": "6a4a91d400320153e8f724b3",
+  "questionId": "6a4a91d300320153e8f724ae",
+  "optionText": "JavaScript",
+  "isCorrect": true,
+  "createdAt": "2026-07-05T17:18:12.129Z"
+}
+{
+  "id": "6a4a91d400320153e8f724b4",
+  "questionId": "6a4a91d300320153e8f724ae",
+  "optionText": "Python",
+  "isCorrect": true,
+  "createdAt": "2026-07-05T17:18:12.195Z"
+}
+{
+  "id": "6a4a91d400320153e8f724b5",
+  "questionId": "6a4a91d300320153e8f724ae",
+  "optionText": "HTML",
+  "isCorrect": false,
+  "createdAt": "2026-07-05T17:18:12.262Z"
+}
+
+7. BUSCANDO QUIZ COMPLETO
+{
+  "id": "6a4a91d300320153e8f724ab",
+  "contentId": "6a4a91d300320153e8f724aa",
+  "timeLimitMinutes": 30,
+  "passingScorePercentage": 70,
+  "attemptsAllowed": 3,
+  "shuffleQuestions": true,
+  "createdAt": "2026-07-05T17:18:12.328Z",
+  "updatedAt": "2026-07-05T17:18:12.328Z",
+  "questions": [
+    {
+      "id": "6a4a91d300320153e8f724ac",
+      "quizId": "6a4a91d300320153e8f724ab",
+      "type": "multiple_choice",
+      "questionText": "Qual é a capital do Brasil?",
+      "points": 2,
+      "orderIndex": 0,
+      "createdAt": "2026-07-05T17:18:12.359Z",
+      "updatedAt": "2026-07-05T17:18:12.359Z",
+      "options": [
+        {
+          "id": "6a4a91d300320153e8f724af",
+          "questionId": "6a4a91d300320153e8f724ac",
+          "optionText": "Brasília",
+          "isCorrect": true,
+          "createdAt": "2026-07-05T17:18:12.388Z"
+        },
+        {
+          "id": "6a4a91d300320153e8f724b0",
+          "questionId": "6a4a91d300320153e8f724ac",
+          "optionText": "São Paulo",
+          "isCorrect": false,
+          "createdAt": "2026-07-05T17:18:12.388Z"
+        }
+      ]
+    },
+    {
+      "id": "6a4a91d300320153e8f724ad",
+      "quizId": "6a4a91d300320153e8f724ab",
+      "type": "true_false",
+      "questionText": "A Terra é plana?",
+      "points": 1,
+      "orderIndex": 1,
+      "createdAt": "2026-07-05T17:18:12.359Z",
+      "updatedAt": "2026-07-05T17:18:12.359Z",
+      "options": [
+        {
+          "id": "6a4a91d300320153e8f724b1",
+          "questionId": "6a4a91d300320153e8f724ad",
+          "optionText": "Verdadeiro",
+          "isCorrect": false,
+          "createdAt": "2026-07-05T17:18:12.391Z"
+        },
+        {
+          "id": "6a4a91d400320153e8f724b2",
+          "questionId": "6a4a91d300320153e8f724ad",
+          "optionText": "Falso",
+          "isCorrect": true,
+          "createdAt": "2026-07-05T17:18:12.391Z"
+        }
+      ]
+    },
+    {
+      "id": "6a4a91d300320153e8f724ae",
+      "quizId": "6a4a91d300320153e8f724ab",
+      "type": "multiple_choice",
+      "questionText": "Quais são linguagens de programação?",
+      "points": 3,
+      "orderIndex": 2,
+      "createdAt": "2026-07-05T17:18:12.359Z",
+      "updatedAt": "2026-07-05T17:18:12.359Z",
+      "options": [
+        {
+          "id": "6a4a91d400320153e8f724b3",
+          "questionId": "6a4a91d300320153e8f724ae",
+          "optionText": "JavaScript",
+          "isCorrect": true,
+          "createdAt": "2026-07-05T17:18:12.390Z"
+        },
+        {
+          "id": "6a4a91d400320153e8f724b4",
+          "questionId": "6a4a91d300320153e8f724ae",
+          "optionText": "Python",
+          "isCorrect": true,
+          "createdAt": "2026-07-05T17:18:12.390Z"
+        },
+        {
+          "id": "6a4a91d400320153e8f724b5",
+          "questionId": "6a4a91d300320153e8f724ae",
+          "optionText": "HTML",
+          "isCorrect": false,
+          "createdAt": "2026-07-05T17:18:12.390Z"
+        }
+      ]
+    }
+  ],
+  "totalQuestions": 3,
+  "totalPoints": 6
+}
+
+8. LISTANDO QUESTÕES DO QUIZ
+[
+  {
+    "id": "6a4a91d300320153e8f724ac",
+    "quizId": "6a4a91d300320153e8f724ab",
+    "type": "multiple_choice",
+    "questionText": "Qual é a capital do Brasil?",
+    "points": 2,
+    "orderIndex": 0,
+    "createdAt": "2026-07-05T17:18:12.427Z",
+    "updatedAt": "2026-07-05T17:18:12.427Z"
+  },
+  {
+    "id": "6a4a91d300320153e8f724ad",
+    "quizId": "6a4a91d300320153e8f724ab",
+    "type": "true_false",
+    "questionText": "A Terra é plana?",
+    "points": 1,
+    "orderIndex": 1,
+    "createdAt": "2026-07-05T17:18:12.427Z",
+    "updatedAt": "2026-07-05T17:18:12.427Z"
+  },
+  {
+    "id": "6a4a91d300320153e8f724ae",
+    "quizId": "6a4a91d300320153e8f724ab",
+    "type": "multiple_choice",
+    "questionText": "Quais são linguagens de programação?",
+    "points": 3,
+    "orderIndex": 2,
+    "createdAt": "2026-07-05T17:18:12.427Z",
+    "updatedAt": "2026-07-05T17:18:12.427Z"
+  }
+]
+
+✅ TESTE DE QUIZZES CONCLUÍDO!
+=========================================

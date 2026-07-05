@@ -1,0 +1,69 @@
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Ambiente
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testes
+/coverage/
+/test/coverage/
+/test/reports/
+
+# Sistema
+Thumbs.db
+Desktop.ini
+
+# Temp
+tmp/
+temp/
+*.tmp
+
+# Arquivos do NestJS
+.eslintcache
+.parcel-cache/
+
+# Outros
+*.pem
+*.key
+*.crt
+.env.*
+!.env.example
+
+# Arquivos do usuário
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.mp4
+*.pdf
+*.zip
+*.tar
+*.gz
