@@ -1,7 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-export function ProtectedRoute({ adminOnly = false }: { adminOnly?: boolean }) {
+type ProtectedRouteProps = {
+  adminOnly?: boolean;
+  allowInstructor?: boolean;
+};
+
+export function ProtectedRoute({ adminOnly = false, allowInstructor = true }: ProtectedRouteProps) {
   const { session, isBootstrapping } = useAuth();
 
   if (isBootstrapping) {
@@ -12,8 +17,11 @@ export function ProtectedRoute({ adminOnly = false }: { adminOnly?: boolean }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && !session.isAdmin && !session.isInstructor) {
-    return <Navigate to="/" replace />;
+  if (adminOnly) {
+    const hasAccess = session.isAdmin || (allowInstructor && session.isInstructor);
+    if (!hasAccess) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <Outlet />;

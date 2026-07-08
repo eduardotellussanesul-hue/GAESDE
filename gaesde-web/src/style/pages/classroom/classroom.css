@@ -1,0 +1,53 @@
+.classroom-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.classroom-main {
+  display: grid;
+  gap: 20px;
+}
+
+.classroom-form,
+.classroom-enrollment-list {
+  display: grid;
+  gap: 16px;
+}
+
+.classroom-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.classroom-enrollment-card {
+  border: 1px solid rgba(81, 97, 119, 0.14);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.classroom-enrollment-card > div {
+  display: grid;
+  gap: 4px;
+}
+
+.classroom-enrollment-card__metrics {
+  color: var(--muted);
+}
+
+@media (max-width: 980px) {
+  .classroom-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .classroom-enrollment-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

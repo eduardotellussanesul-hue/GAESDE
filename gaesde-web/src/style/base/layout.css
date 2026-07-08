@@ -1,0 +1,29 @@
+.container {
+  width: min(1080px, 100% - 32px);
+  margin: 30px auto 56px;
+}
+
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.page--center {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}

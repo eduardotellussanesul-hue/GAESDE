@@ -8,10 +8,14 @@ import { ContentCompletionService } from './content-completion.service';
 import { ContentCompletionController } from '../../presentation/controllers/content-completion.controller';
 import { ContentModule } from '../content/content.module';
 import { EnrollmentModule } from '../enrollment/enrollment.module';
+import { ModuleSchema } from '../../infrastructure/repositories/module.repository.impl';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'ContentCompletion', schema: ContentCompletionSchema }]),
+    MongooseModule.forFeature([
+      { name: 'ContentCompletion', schema: ContentCompletionSchema },
+      { name: 'Module', schema: ModuleSchema },
+    ]),
     ContentModule,
     EnrollmentModule,
   ],

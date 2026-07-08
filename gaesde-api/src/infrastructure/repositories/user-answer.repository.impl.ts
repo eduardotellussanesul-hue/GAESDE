@@ -8,6 +8,7 @@ export interface UserAnswerDocument extends Document {
   attempt_id: string;
   question_id: string;
   selected_option_id?: string;
+  selected_option_ids?: string[];
   text_response?: string;
   is_correct?: boolean;
   points_earned: number;
@@ -29,6 +30,12 @@ export const UserAnswerSchema = new Schema<UserAnswerDocument>(
     selected_option_id: {
       type: String,
       required: false,
+      ref: 'QuestionOption',
+    },
+    selected_option_ids: {
+      type: [String],
+      required: false,
+      default: undefined,
       ref: 'QuestionOption',
     },
     text_response: {
@@ -66,6 +73,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
       attempt_id: answer.attemptId,
       question_id: answer.questionId,
       selected_option_id: answer.selectedOptionId,
+      selected_option_ids: answer.selectedOptionIds,
       text_response: answer.textResponse,
       is_correct: answer.isCorrect,
       points_earned: answer.pointsEarned,
@@ -85,6 +93,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
       found.selected_option_id || undefined,
       found.text_response || undefined,
       found.is_correct || undefined,
+      found.selected_option_ids || undefined,
     );
     answer.id = found._id.toString();
     return answer;
@@ -100,6 +109,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
         f.selected_option_id || undefined,
         f.text_response || undefined,
         f.is_correct || undefined,
+        f.selected_option_ids || undefined,
       );
       answer.id = f._id.toString();
       return answer;
@@ -116,6 +126,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
         f.selected_option_id || undefined,
         f.text_response || undefined,
         f.is_correct || undefined,
+        f.selected_option_ids || undefined,
       );
       answer.id = f._id.toString();
       return answer;
@@ -135,6 +146,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
       found.selected_option_id || undefined,
       found.text_response || undefined,
       found.is_correct || undefined,
+      found.selected_option_ids || undefined,
     );
     answer.id = found._id.toString();
     return answer;
@@ -150,6 +162,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
         f.selected_option_id || undefined,
         f.text_response || undefined,
         f.is_correct || undefined,
+        f.selected_option_ids || undefined,
       );
       answer.id = f._id.toString();
       return answer;
@@ -159,6 +172,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
   async update(id: string, data: Partial<UserAnswer>): Promise<UserAnswer | null> {
     const updateData: any = {};
     if (data.selectedOptionId !== undefined) updateData.selected_option_id = data.selectedOptionId;
+    if (data.selectedOptionIds !== undefined) updateData.selected_option_ids = data.selectedOptionIds;
     if (data.textResponse !== undefined) updateData.text_response = data.textResponse;
     if (data.isCorrect !== undefined) updateData.is_correct = data.isCorrect;
     if (data.pointsEarned !== undefined) updateData.points_earned = data.pointsEarned;
@@ -174,6 +188,7 @@ export class UserAnswerRepository implements IUserAnswerRepository {
       updated.selected_option_id || undefined,
       updated.text_response || undefined,
       updated.is_correct || undefined,
+      updated.selected_option_ids || undefined,
     );
     answer.id = updated._id.toString();
     return answer;

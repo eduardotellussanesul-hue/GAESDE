@@ -4,6 +4,9 @@ import { LoginPage } from '../pages/LoginPage';
 import { HomePage } from '../pages/HomePage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { UsersPage } from '../pages/UsersPage';
+import { CoursesPage } from '../pages/CoursesPage';
+import { LearningPage } from '../pages/LearningPage';
+import { ClassroomPage } from '../pages/ClassroomPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { Navbar } from '../components/layout/Navbar';
@@ -30,12 +33,20 @@ export function AppRouter() {
         <Route element={<PrivateLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/learning" element={<LearningPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute adminOnly allowInstructor={false} />}>
+        <Route element={<PrivateLayout />}>
+          <Route path="/users" element={<UsersPage />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute adminOnly />}>
         <Route element={<PrivateLayout />}>
-          <Route path="/users" element={<UsersPage />} />
+          <Route path="/classroom" element={<ClassroomPage />} />
         </Route>
       </Route>
 

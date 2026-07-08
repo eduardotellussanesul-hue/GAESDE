@@ -1,0 +1,42 @@
+﻿{
+    "professor":  {
+                      "id":  "6a4ea780a5613b53ef1b02fd",
+                      "email":  "professor.ia.lms@gaesde.com",
+                      "password":  "Professor@123"
+                  },
+    "aluno":  {
+                  "id":  "6a4ea780a5613b53ef1b02fe",
+                  "email":  "aluno.ia.lms@gaesde.com",
+                  "password":  "Aluno@123"
+              },
+    "curso":  {
+                  "id":  "6a4ea7e2a5613b53ef1b0302",
+                  "title":  "Curso de Programacao Completo",
+                  "slug":  "curso-programacao-completo-20260708154122"
+              },
+    "modulo":  {
+                   "id":  "6a4ea7e3a5613b53ef1b0303",
+                   "title":  "Modulo 1 - Fundamentos de Programacao"
+               },
+    "conteudo_texto":  {
+                           "id":  "6a4ea7e3a5613b53ef1b0304",
+                           "title":  "Introducao a Programacao"
+                       },
+    "conteudo_video":  {
+                           "id":  "6a4ea7e3a5613b53ef1b0306",
+                           "title":  "Video Aula - Variaveis e Tipos"
+                       },
+    "conteudo_quiz":  {
+                          "id":  "6a4ea7e3a5613b53ef1b0308",
+                          "title":  "Quiz - Programacao Basica"
+                      },
+    "quiz":  {
+                 "id":  "6a4ea7e3a5613b53ef1b0309",
+                 "perguntas":  10,
+                 "opcoesPorPergunta":  4
+             },
+    "matricula":  {
+                      "id":  "6a4ea7e9a5613b53ef1b033c",
+                      "status":  "active"
+                  }
+}

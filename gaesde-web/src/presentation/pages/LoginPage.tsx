@@ -30,28 +30,12 @@ export function LoginPage() {
     <div className="page page--center">
       <section className="auth-shell">
         <aside className="auth-shell__story">
-          <p className="eyebrow">Painel operacional</p>
-          <h1>Acesse o GAESDE com foco, ritmo e clareza.</h1>
-          <p className="muted">
-            Base em cinza-ardosia, energia em azul-eletrico e calor controlado em dourado-ambar.
-          </p>
-
-          <div className="auth-shell__tokens" aria-hidden="true">
-            <span className="token token--slate" />
-            <span className="token token--blue" />
-            <span className="token token--amber" />
-            <span className="token token--ice" />
-          </div>
-
-          <div className="signal-card">
-            <strong>API ativa</strong>
-            <span>localhost:3000</span>
-          </div>
+          <h1>Acesse a Plataforma GAESDE com foco, ritmo e clareza.</h1>         
         </aside>
 
         <section className="panel panel--auth">
           <p className="eyebrow">Login</p>
-          <h2>Entrar na console</h2>
+          <h2>Entrar</h2>
           <p className="muted">Use sua conta para acessar profile, usuarios e permissoes.</p>
 
           <form onSubmit={handleSubmit} className="form">

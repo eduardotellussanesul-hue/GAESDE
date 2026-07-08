@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { IAssignmentSubmissionRepository } from '../../domain/assignment-submission/assignment-submission.repository.interface';
 import type { IContentRepository } from '../../domain/content/content.repository.interface';
 import type { IEnrollmentRepository } from '../../domain/enrollment/enrollment.repository.interface';
+import { ModuleService } from '../module/module.service';
 import { AssignmentSubmission } from '../../domain/assignment-submission/assignment-submission.entity';
 import { 
   AssignmentSubmissionNotFoundException,
@@ -16,6 +17,7 @@ export class AssignmentSubmissionService {
     @Inject('IAssignmentSubmissionRepository') private submissionRepository: IAssignmentSubmissionRepository,
     @Inject('IContentRepository') private contentRepository: IContentRepository,
     @Inject('IEnrollmentRepository') private enrollmentRepository: IEnrollmentRepository,
+    private moduleService: ModuleService,
   ) {}
 
   async submit(userId: string, contentId: string, fileUrl: string): Promise<any> {
@@ -24,7 +26,8 @@ export class AssignmentSubmissionService {
       throw new ContentNotFoundException(contentId);
     }
 
-    const enrollment = await this.enrollmentRepository.findByUserAndCourse(userId, content.moduleId);
+    const module = await this.moduleService.findById(content.moduleId);
+    const enrollment = await this.enrollmentRepository.findByUserAndCourse(userId, module.courseId);
     if (!enrollment) {
       throw new Error('User is not enrolled in this course');
     }

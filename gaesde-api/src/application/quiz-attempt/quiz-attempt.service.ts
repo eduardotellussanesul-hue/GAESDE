@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { IQuizAttemptRepository } from '../../domain/quiz-attempt/quiz-attempt.repository.interface';
@@ -67,7 +67,7 @@ export class QuizAttemptService {
     // Verificar limite de tentativas
     const attemptsCount = await this.attemptRepository.countAttemptsByUserAndQuiz(userId, quizId);
     if (attemptsCount >= quiz.attemptsAllowed) {
-      throw new Error(`Maximum attempts (${quiz.attemptsAllowed}) exceeded`);
+      throw new BadRequestException(`Maximum attempts (${quiz.attemptsAllowed}) exceeded`);
     }
 
     const attempt = new QuizAttempt(quizId, userId, enrollment.id);
@@ -99,20 +99,49 @@ export class QuizAttemptService {
       const userAnswer = answers.find(a => a.questionId === question.id);
       if (!userAnswer) continue;
 
+      const normalizedOptionIds: string[] = Array.isArray(userAnswer.selectedOptionIds)
+        ? [
+            ...new Set<string>(
+              userAnswer.selectedOptionIds.filter(
+                (optionId: unknown): optionId is string => typeof optionId === 'string' && optionId.trim().length > 0,
+              ),
+            ),
+          ]
+        : [];
+
+      if (normalizedOptionIds.length === 0 && typeof userAnswer.selectedOptionId === 'string' && userAnswer.selectedOptionId.trim().length > 0) {
+        normalizedOptionIds.push(userAnswer.selectedOptionId);
+      }
+
       const answer = new UserAnswer(
         attemptId,
         question.id,
         0,
-        userAnswer.selectedOptionId,
+        normalizedOptionIds[0],
         userAnswer.textResponse,
       );
+      answer.selectedOptionIds = normalizedOptionIds.length > 0 ? normalizedOptionIds : undefined;
 
       if (question.type === 'multiple_choice' || question.type === 'true_false') {
-        if (userAnswer.selectedOptionId) {
-          const options = await this.optionRepository.findCorrectOptions(question.id);
-          const isCorrect = options.some(o => o.id === userAnswer.selectedOptionId);
+        const options = await this.optionRepository.findCorrectOptions(question.id);
+        const correctOptionIds = options.map(option => option.id);
+
+        if (question.type === 'multiple_choice') {
+          const correctOptionIdSet = new Set<string>(correctOptionIds);
+          const isCorrect =
+            normalizedOptionIds.length > 0 &&
+            normalizedOptionIds.length === correctOptionIds.length &&
+            normalizedOptionIds.every(optionId => correctOptionIdSet.has(optionId));
+
           answer.isCorrect = isCorrect;
           answer.pointsEarned = isCorrect ? question.points : 0;
+        } else {
+          const selectedOptionId = normalizedOptionIds[0];
+          const isCorrect = Boolean(selectedOptionId && correctOptionIds.includes(selectedOptionId));
+          answer.isCorrect = isCorrect;
+          answer.pointsEarned = isCorrect ? question.points : 0;
+          answer.selectedOptionIds = selectedOptionId ? [selectedOptionId] : undefined;
+          answer.selectedOptionId = selectedOptionId;
         }
       } else if (question.type === 'essay') {
         answer.textResponse = userAnswer.textResponse;
@@ -178,6 +207,7 @@ export class QuizAttemptService {
         pointsEarned: answer ? answer.pointsEarned : 0,
         isCorrect: answer ? answer.isCorrect : null,
         selectedOptionId: answer ? answer.selectedOptionId : null,
+        selectedOptionIds: answer ? answer.selectedOptionIds ?? (answer.selectedOptionId ? [answer.selectedOptionId] : []) : [],
         textResponse: answer ? answer.textResponse : null,
         options: options.map(o => ({
           id: o.id,

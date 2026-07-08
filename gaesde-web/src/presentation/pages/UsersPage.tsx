@@ -197,7 +197,6 @@ export function UsersPage() {
         <div>
           <p className="eyebrow">Administracao</p>
           <h1>Usuarios e permissoes</h1>
-          <p className="muted">Controle de acesso, atribuicao de roles e leitura rapida do quadro atual.</p>
         </div>
 
         <div className="admin-hero__stats">

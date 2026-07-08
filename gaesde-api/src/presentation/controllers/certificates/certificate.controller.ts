@@ -25,6 +25,20 @@ export class CertificateController {
     return this.certificateService.generateCertificate(enrollmentId);
   }
 
+  @Post('my-enrollments/:enrollmentId/generate')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Gerar meu certificado',
+    description: 'Gera certificado para a matrícula do usuário autenticado, desde que o curso esteja concluído.',
+  })
+  @ApiResponse({ status: 201, description: 'Certificado gerado com sucesso' })
+  @ApiResponse({ status: 403, description: 'Matrícula não pertence ao usuário autenticado' })
+  @ApiResponse({ status: 400, description: 'Curso ainda não concluído' })
+  async generateMyCertificate(@Param('enrollmentId') enrollmentId: string, @Request() req) {
+    const userId = req.user.userId;
+    return this.certificateService.generateCertificateForUser(userId, enrollmentId);
+  }
+
   @Get('user')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({

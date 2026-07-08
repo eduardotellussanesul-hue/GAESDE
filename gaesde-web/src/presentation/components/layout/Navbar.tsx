@@ -15,7 +15,6 @@ export function Navbar() {
           <span className="brand__mark" aria-hidden="true" />
           <span>
             <strong>GAESDE</strong>
-            <small>Web Console</small>
           </span>
         </Link>
 
@@ -23,10 +22,21 @@ export function Navbar() {
           <NavLink to="/" end className="menu__link">
             Home
           </NavLink>
+          <NavLink to="/courses" className="menu__link">
+            Cursos
+          </NavLink>
+          <NavLink to="/learning" className="menu__link">
+            Aprendizado
+          </NavLink>
           <NavLink to="/profile" className="menu__link">
             Profile
           </NavLink>
           {session.isAdmin || session.isInstructor ? (
+            <NavLink to="/classroom" className="menu__link">
+              Turmas
+            </NavLink>
+          ) : null}
+          {session.isAdmin ? (
             <NavLink to="/users" className="menu__link">
               Usuarios e Permissoes
             </NavLink>

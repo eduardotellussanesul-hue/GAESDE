@@ -69,6 +69,33 @@ QuizAttemptSchema.index({ status: 1 });
 export class QuizAttemptRepository implements IQuizAttemptRepository {
   constructor(@InjectModel('QuizAttempt') private attemptModel: Model<QuizAttemptDocument>) {}
 
+  private mapToEntity(doc: QuizAttemptDocument): QuizAttempt {
+    const attempt = new QuizAttempt(
+      doc.quiz_id,
+      doc.user_id,
+      doc.enrollment_id,
+      doc.status as QuizAttemptStatus,
+    );
+    attempt.id = doc._id.toString();
+
+    // Restore persisted lifecycle/result fields so API responses show real score/pass state.
+    const hydratedAttempt = attempt as unknown as {
+      _startedAt: Date;
+      _createdAt: Date;
+      _submittedAt?: Date;
+      _totalScore?: number;
+      _isPassed?: boolean;
+    };
+
+    hydratedAttempt._startedAt = doc.started_at;
+    hydratedAttempt._createdAt = doc.started_at;
+    hydratedAttempt._submittedAt = doc.submitted_at || undefined;
+    hydratedAttempt._totalScore = doc.total_score ?? undefined;
+    hydratedAttempt._isPassed = doc.is_passed ?? undefined;
+
+    return attempt;
+  }
+
   async save(attempt: QuizAttempt): Promise<QuizAttempt> {
     const newAttempt = new this.attemptModel({
       quiz_id: attempt.quizId,
@@ -87,100 +114,39 @@ export class QuizAttemptRepository implements IQuizAttemptRepository {
   async findById(id: string): Promise<QuizAttempt | null> {
     const found = await this.attemptModel.findById(id).exec();
     if (!found) return null;
-    const attempt = new QuizAttempt(
-      found.quiz_id,
-      found.user_id,
-      found.enrollment_id,
-      found.status as QuizAttemptStatus,
-    );
-    attempt.id = found._id.toString();
-    return attempt;
+    return this.mapToEntity(found);
   }
 
   async findByUser(userId: string): Promise<QuizAttempt[]> {
     const found = await this.attemptModel.find({ user_id: userId }).exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async findByQuiz(quizId: string): Promise<QuizAttempt[]> {
     const found = await this.attemptModel.find({ quiz_id: quizId }).exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async findByEnrollment(enrollmentId: string): Promise<QuizAttempt[]> {
     const found = await this.attemptModel.find({ enrollment_id: enrollmentId }).exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async findByUserAndQuiz(userId: string, quizId: string): Promise<QuizAttempt[]> {
     const found = await this.attemptModel
       .find({ user_id: userId, quiz_id: quizId })
       .exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async findByStatus(status: QuizAttemptStatus): Promise<QuizAttempt[]> {
     const found = await this.attemptModel.find({ status }).exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async findAll(): Promise<QuizAttempt[]> {
     const found = await this.attemptModel.find().exec();
-    return found.map(f => {
-      const attempt = new QuizAttempt(
-        f.quiz_id,
-        f.user_id,
-        f.enrollment_id,
-        f.status as QuizAttemptStatus,
-      );
-      attempt.id = f._id.toString();
-      return attempt;
-    });
+    return found.map(f => this.mapToEntity(f));
   }
 
   async update(id: string, data: Partial<QuizAttempt>): Promise<QuizAttempt | null> {
@@ -194,14 +160,7 @@ export class QuizAttemptRepository implements IQuizAttemptRepository {
       .findByIdAndUpdate(id, updateData, { new: true })
       .exec();
     if (!updated) return null;
-    const attempt = new QuizAttempt(
-      updated.quiz_id,
-      updated.user_id,
-      updated.enrollment_id,
-      updated.status as QuizAttemptStatus,
-    );
-    attempt.id = updated._id.toString();
-    return attempt;
+    return this.mapToEntity(updated);
   }
 
   async delete(id: string): Promise<void> {

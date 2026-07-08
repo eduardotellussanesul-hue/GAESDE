@@ -1,0 +1,99 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 200ms ease;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: rise 300ms ease;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal__header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--slate-500);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+.modal__close:hover {
+  background: var(--slate-100);
+  color: var(--slate-700);
+}
+
+.modal__content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(47, 128, 255, 0.3), rgba(217, 164, 65, 0.3));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--blue-600);
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.modal__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.modal__actions button {
+  flex: 1;
+}
+
+.modal__delete-confirm {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}

@@ -1,0 +1,118 @@
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-strong);
+  box-shadow: var(--shadow-soft);
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.panel--nested {
+  box-shadow: none;
+  background: linear-gradient(180deg, rgba(243, 247, 252, 0.92), rgba(255, 249, 239, 0.6));
+  border-color: rgba(191, 134, 36, 0.14);
+}
+
+.panel--auth {
+  width: min(460px, 100%);
+  align-content: start;
+}
+
+.panel--profile {
+  grid-template-columns: minmax(0, 720px);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0 16px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(47, 128, 255, 0.22);
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 12px 28px rgba(47, 128, 255, 0.28);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.button--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f7fbff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+.button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(35, 45, 59, 0.18);
+}
+
+.button--danger:hover {
+  opacity: 0.9;
+  box-shadow: 0 12px 24px rgba(35, 45, 59, 0.24);
+}
+
+.button--danger:disabled {
+  opacity: 0.6;
+}
+
+.button--wide {
+  width: 100%;
+}
+
+.error {
+  color: var(--accent-strong);
+  font-weight: 600;
+  background: rgba(217, 164, 65, 0.14);
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.info {
+  color: var(--primary-strong);
+  font-weight: 600;
+  background: rgba(47, 128, 255, 0.08);
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.metric-box {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 4px;
+}
+
+.metric-box strong {
+  font-size: 22px;
+}
+
+.metric-box span {
+  color: rgba(243, 247, 252, 0.72);
+}
+
+.metric-box--accent {
+  background: linear-gradient(135deg, rgba(217, 164, 65, 0.16), rgba(47, 128, 255, 0.12));
+}

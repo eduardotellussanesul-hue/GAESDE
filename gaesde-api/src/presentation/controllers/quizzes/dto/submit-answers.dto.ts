@@ -21,6 +21,16 @@ class AnswerDto {
   selectedOptionId?: string;
 
   @ApiProperty({
+    example: ['6a4a9f1d9cb9ec15ee5879ab', '6a4a9f1d9cb9ec15ee5879ac'],
+    description: 'IDs das opções selecionadas (para múltipla escolha com múltiplas respostas)',
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  selectedOptionIds?: string[];
+
+  @ApiProperty({
     example: 'Resposta discursiva do aluno...',
     description: 'Resposta textual (para questões essay)',
     required: false,

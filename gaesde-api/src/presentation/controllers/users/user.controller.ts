@@ -202,14 +202,14 @@ export class UserController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  @Roles('admin')
+  @Roles('admin', 'instructor')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Listar todos os usuários',
-    description: 'Retorna a lista de todos os usuários. Apenas administradores.',
+    description: 'Retorna a lista de todos os usuários. Administradores e instrutores.',
   })
   @ApiResponse({ status: 200, description: 'Lista de usuários retornada com sucesso' })
-  @ApiResponse({ status: 403, description: 'Acesso negado - Role admin necessária' })
+  @ApiResponse({ status: 403, description: 'Acesso negado - Role admin ou instructor necessária' })
   async findAll() {
     return this.userService.findAll();
   }

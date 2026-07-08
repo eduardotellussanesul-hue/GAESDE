@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ForbiddenException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 // Importação correta para pdfkit
 import PDFDocument from 'pdfkit';
@@ -58,6 +58,19 @@ export class CertificateService {
     );
     const saved = await this.certificateRepository.save(certificate);
     return this.mapToResponse(saved);
+  }
+
+  async generateCertificateForUser(userId: string, enrollmentId: string): Promise<any> {
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new Error('Enrollment not found');
+    }
+
+    if (enrollment.userId !== userId) {
+      throw new ForbiddenException('You can only generate certificates for your own enrollments');
+    }
+
+    return this.generateCertificate(enrollmentId);
   }
 
   private async generateCertificatePdf(user: any, course: any, verificationCode: string): Promise<string> {

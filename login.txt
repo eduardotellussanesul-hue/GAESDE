@@ -1,0 +1,3 @@
+Professor: professor.ia.lms@gaesde.com / Professor@123
+Aluno: aluno.ia.lms@gaesde.com / Aluno@123
+Admin: 

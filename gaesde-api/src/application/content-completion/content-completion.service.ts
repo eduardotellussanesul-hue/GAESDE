@@ -1,13 +1,11 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import type { IContentCompletionRepository } from '../../domain/content-completion/content-completion.repository.interface';
 import type { IContentRepository } from '../../domain/content/content.repository.interface';
 import type { IEnrollmentRepository } from '../../domain/enrollment/enrollment.repository.interface';
 import { ContentCompletion } from '../../domain/content-completion/content-completion.entity';
-import { 
-  ContentCompletionNotFoundException, 
-  ContentAlreadyCompletedException,
-} from '../../domain/content-completion/content-completion.exceptions';
-import { ContentNotFoundException } from '../../domain/content/content.exceptions';
+import { ContentCompletionNotFoundException } from '../../domain/content-completion/content-completion.exceptions';
 import { EnrollmentNotActiveException } from '../../domain/enrollment/enrollment.exceptions';
 
 @Injectable()
@@ -16,28 +14,29 @@ export class ContentCompletionService {
     @Inject('IContentCompletionRepository') private completionRepository: IContentCompletionRepository,
     @Inject('IContentRepository') private contentRepository: IContentRepository,
     @Inject('IEnrollmentRepository') private enrollmentRepository: IEnrollmentRepository,
+    @InjectModel('Module') private moduleModel: Model<any>,
   ) {}
 
   async complete(userId: string, contentId: string): Promise<any> {
     const content = await this.contentRepository.findContentById(contentId);
     if (!content) {
-      throw new ContentNotFoundException(contentId);
+      throw new NotFoundException(`Content ${contentId} not found`);
     }
 
     const existing = await this.completionRepository.findByUserAndContent(userId, contentId);
     if (existing) {
-      throw new ContentAlreadyCompletedException(userId, contentId);
+      throw new ConflictException(`User ${userId} already completed content ${contentId}`);
     }
 
-    const moduleModel = this.completionRepository['completionModel'].db.model('Module');
-    const module = await moduleModel.findById(content.moduleId).exec();
+    const module = await this.moduleModel.findById(content.moduleId).exec();
     if (!module) {
-      throw new Error('Module not found');
+      throw new NotFoundException('Module not found');
     }
 
-    const enrollment = await this.enrollmentRepository.findByUserAndCourse(userId, module.course_id);
+    const courseId = typeof module.course_id === 'string' ? module.course_id : module.course_id?.toString?.();
+    const enrollment = await this.enrollmentRepository.findByUserAndCourse(userId, courseId);
     if (!enrollment) {
-      throw new Error('User is not enrolled in this course');
+      throw new ForbiddenException('User is not enrolled in this course');
     }
 
     if (!enrollment.isActive) {
@@ -80,8 +79,7 @@ export class ContentCompletionService {
   }
 
   async getProgress(userId: string, courseId: string): Promise<any> {
-    const moduleModel = this.completionRepository['completionModel'].db.model('Module');
-    const modules = await moduleModel.find({ course_id: courseId }).exec();
+    const modules = await this.moduleModel.find({ course_id: courseId }).exec();
     
     let totalContents = 0;
     let completedContents = 0;

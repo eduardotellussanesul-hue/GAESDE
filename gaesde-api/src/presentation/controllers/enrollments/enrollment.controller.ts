@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EnrollmentService } from '../../../application/enrollment/enrollment.service';
 import { EnrollmentStatus } from '../../../domain/enrollment/enrollment.entity';
+import { UserRoleService } from '../../../application/user-role/user-role.service';
 import { JwtAuthGuard } from '../../../infrastructure/auth/guards/jwt-auth.guard';
 import { Roles } from '../../decorators/roles.decorator';
 import { EnrollDto } from './dto/enroll.dto';
@@ -10,7 +11,10 @@ import { EnrollDto } from './dto/enroll.dto';
 @Controller('enrollments')
 @UseGuards(JwtAuthGuard)
 export class EnrollmentController {
-  constructor(private enrollmentService: EnrollmentService) {}
+  constructor(
+    private enrollmentService: EnrollmentService,
+    private userRoleService: UserRoleService,
+  ) {}
 
   @Post()
   @ApiBearerAuth('JWT-auth')
@@ -26,6 +30,23 @@ export class EnrollmentController {
     return this.enrollmentService.enroll(userId, data.courseId);
   }
 
+  @Post('assign')
+  @Roles('admin', 'instructor')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Vincular aluno a curso',
+    description: 'Cria uma matrícula para um aluno específico. Requer role instructor ou admin.',
+  })
+  @ApiResponse({ status: 201, description: 'Matrícula criada com sucesso' })
+  @ApiResponse({ status: 400, description: 'Usuário alvo não informado' })
+  async assignEnrollment(@Body() data: EnrollDto) {
+    if (!data.userId) {
+      throw new BadRequestException('userId is required for enrollment assignment');
+    }
+
+    return this.enrollmentService.enroll(data.userId, data.courseId);
+  }
+
   @Get('my-enrollments')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
@@ -36,6 +57,19 @@ export class EnrollmentController {
   async getMyEnrollments(@Request() req) {
     const userId = req.user.userId;
     return this.enrollmentService.getMyEnrollments(userId);
+  }
+
+  @Post('my-enrollments/:courseId/reset-progress')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Resetar progresso do curso',
+    description: 'Limpa completions, tentativas/respostas de quiz e entregas do usuário autenticado no curso informado.',
+  })
+  @ApiResponse({ status: 200, description: 'Progresso resetado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Matrícula não encontrada para o curso informado' })
+  async resetMyCourseProgress(@Param('courseId') courseId: string, @Request() req) {
+    const userId = req.user.userId;
+    return this.enrollmentService.resetMyCourseProgress(userId, courseId);
   }
 
   @Get('user/:userId')
@@ -60,6 +94,24 @@ export class EnrollmentController {
   @ApiResponse({ status: 200, description: 'Lista de matrículas retornada com sucesso' })
   async findByCourse(@Param('courseId') courseId: string) {
     return this.enrollmentService.findByCourse(courseId);
+  }
+
+  @Get('course/:courseId/community')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Comunidade da turma',
+    description: 'Retorna professor e alunos da turma. Admin/instrutor podem ver qualquer turma; aluno precisa estar matriculado.',
+  })
+  @ApiResponse({ status: 200, description: 'Dados da turma retornados com sucesso' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para acessar esta turma' })
+  async getCourseCommunity(@Param('courseId') courseId: string, @Request() req) {
+    const userId = req.user.userId;
+    const [isAdmin, isInstructor] = await Promise.all([
+      this.userRoleService.hasRole(userId, 'admin'),
+      this.userRoleService.hasRole(userId, 'instructor'),
+    ]);
+
+    return this.enrollmentService.getCourseCommunity(userId, courseId, isAdmin || isInstructor);
   }
 
   @Get(':id')

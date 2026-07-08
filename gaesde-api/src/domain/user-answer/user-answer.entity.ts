@@ -3,6 +3,7 @@ export class UserAnswer {
   private _attemptId: string;
   private _questionId: string;
   private _selectedOptionId?: string;
+  private _selectedOptionIds?: string[];
   private _textResponse?: string;
   private _isCorrect?: boolean;
   private _pointsEarned: number;
@@ -15,6 +16,7 @@ export class UserAnswer {
     selectedOptionId?: string,
     textResponse?: string,
     isCorrect?: boolean,
+    selectedOptionIds?: string[],
   ) {
     this.validateAttemptId(attemptId);
     this.validateQuestionId(questionId);
@@ -23,6 +25,7 @@ export class UserAnswer {
     this._attemptId = attemptId;
     this._questionId = questionId;
     this._selectedOptionId = selectedOptionId;
+    this._selectedOptionIds = selectedOptionIds;
     this._textResponse = textResponse;
     this._isCorrect = isCorrect;
     this._pointsEarned = pointsEarned;
@@ -51,6 +54,7 @@ export class UserAnswer {
   get attemptId(): string { return this._attemptId; }
   get questionId(): string { return this._questionId; }
   get selectedOptionId(): string | undefined { return this._selectedOptionId; }
+  get selectedOptionIds(): string[] | undefined { return this._selectedOptionIds; }
   get textResponse(): string | undefined { return this._textResponse; }
   get isCorrect(): boolean | undefined { return this._isCorrect; }
   get pointsEarned(): number { return this._pointsEarned; }
@@ -58,6 +62,12 @@ export class UserAnswer {
 
   set id(id: string) { this._id = id; }
   set selectedOptionId(optionId: string | undefined) { this._selectedOptionId = optionId; }
+  set selectedOptionIds(optionIds: string[] | undefined) {
+    if (optionIds && optionIds.some(optionId => !optionId || optionId.trim().length < 1)) {
+      throw new Error('Selected option IDs must be valid');
+    }
+    this._selectedOptionIds = optionIds;
+  }
   set textResponse(response: string | undefined) { this._textResponse = response; }
   set isCorrect(isCorrect: boolean | undefined) { this._isCorrect = isCorrect; }
   set pointsEarned(points: number) {
@@ -71,6 +81,7 @@ export class UserAnswer {
       attemptId: this._attemptId,
       questionId: this._questionId,
       selectedOptionId: this._selectedOptionId,
+      selectedOptionIds: this._selectedOptionIds,
       textResponse: this._textResponse,
       isCorrect: this._isCorrect,
       pointsEarned: this._pointsEarned,

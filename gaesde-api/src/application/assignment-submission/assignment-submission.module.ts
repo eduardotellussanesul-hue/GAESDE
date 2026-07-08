@@ -8,12 +8,14 @@ import { AssignmentSubmissionService } from './assignment-submission.service';
 import { AssignmentSubmissionController } from '../../presentation/controllers/assignments/assignment-submission.controller';
 import { ContentModule } from '../content/content.module';
 import { EnrollmentModule } from '../enrollment/enrollment.module';
+import { ModuleModule } from '../module/module.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'AssignmentSubmission', schema: AssignmentSubmissionSchema }]),
     ContentModule,
     EnrollmentModule,
+    ModuleModule,
   ],
   providers: [
     AssignmentSubmissionService,
