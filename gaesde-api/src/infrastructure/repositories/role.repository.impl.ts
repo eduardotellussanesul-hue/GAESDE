@@ -44,8 +44,7 @@ export const RoleSchema = new Schema<RoleDocument>(
   },
 );
 
-RoleSchema.index({ slug: 1 }, { unique: true });
-RoleSchema.index({ name: 1 }, { unique: true });
+// unique indexes for slug/name are already declared in schema fields
 
 @Injectable()
 export class RoleRepository implements IRoleRepository {

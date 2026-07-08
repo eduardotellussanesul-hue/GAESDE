@@ -92,7 +92,6 @@ export const CourseSchema = new Schema<CourseDocument>(
   },
 );
 
-CourseSchema.index({ slug: 1 }, { unique: true });
 CourseSchema.index({ instructor_id: 1 });
 CourseSchema.index({ category_id: 1 });
 CourseSchema.index({ status: 1 });

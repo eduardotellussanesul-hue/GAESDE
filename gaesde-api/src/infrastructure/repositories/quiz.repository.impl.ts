@@ -54,7 +54,7 @@ export const QuizSchema = new Schema<QuizDocument>(
   },
 );
 
-QuizSchema.index({ content_id: 1 }, { unique: true });
+// unique index for content_id already declared in schema field
 
 @Injectable()
 export class QuizRepository implements IQuizRepository {

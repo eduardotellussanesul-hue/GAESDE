@@ -98,7 +98,7 @@ export const ContentVideoSchema = new Schema<ContentVideoDocument>(
   },
 );
 
-ContentVideoSchema.index({ content_id: 1 }, { unique: true });
+// unique index for content_id already declared in schema field
 
 // ===== ContentText Schema =====
 export interface ContentTextDocument extends Document {
@@ -128,7 +128,7 @@ export const ContentTextSchema = new Schema<ContentTextDocument>(
   },
 );
 
-ContentTextSchema.index({ content_id: 1 }, { unique: true });
+// unique index for content_id already declared in schema field
 
 // ===== ContentPdf Schema =====
 export interface ContentPdfDocument extends Document {
@@ -164,7 +164,7 @@ export const ContentPdfSchema = new Schema<ContentPdfDocument>(
   },
 );
 
-ContentPdfSchema.index({ content_id: 1 }, { unique: true });
+// unique index for content_id already declared in schema field
 
 // ===== Repository Implementation =====
 @Injectable()

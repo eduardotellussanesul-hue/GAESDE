@@ -84,7 +84,6 @@ export const UserSchema = new Schema<UserDocument>(
 );
 
 // Índices
-UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ deleted_at: 1 });
 
 @Injectable()

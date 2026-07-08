@@ -43,7 +43,6 @@ export const CategorySchema = new Schema<CategoryDocument>(
   },
 );
 
-CategorySchema.index({ slug: 1 }, { unique: true });
 CategorySchema.index({ parent_id: 1 });
 
 @Injectable()

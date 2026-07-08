@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
+    "start:dev:clean": "bash -lc 'pids=$(lsof -ti :3000 2>/dev/null); if [ -n \"$pids\" ]; then kill $pids; sleep 1; fi; nest start --watch'",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

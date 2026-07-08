@@ -8,6 +8,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { UserService } from '../../../application/user/user.service';
+import { UserRoleService } from '../../../application/user-role/user-role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from '../../../presentation/controllers/auth/dto/login.dto';
@@ -22,15 +23,18 @@ export class UserController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
+    private userRoleService: UserRoleService,
   ) {}
 
-  @Public()
+  @UseGuards(JwtAuthGuard)
+  @Roles('admin', 'instructor')
   @Post('register')
   @ApiOperation({
     summary: 'Registrar novo usuário',
     description: 'Cria uma nova conta de usuário. O email deve ser único.',
   })
   @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
+  @ApiResponse({ status: 403, description: 'Acesso negado - Role admin ou instructor necessária' })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 409, description: 'Email já cadastrado' })
   @UseInterceptors(FileInterceptor('file'))
@@ -125,7 +129,10 @@ export class UserController {
     file?: Express.Multer.File,
   ) {
     const userId = req.user.userId;
-    if (userId !== id) {
+    
+    // Verificar se é admin ou se está atualizando a própria conta
+    const isAdmin = await this.userRoleService.hasRole(userId, 'admin');
+    if (userId !== id && !isAdmin) {
       throw new ForbiddenException('Você só pode atualizar sua própria conta');
     }
 
@@ -225,15 +232,19 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Obter usuário por ID',
-    description: 'Retorna os dados de um usuário específico.',
+    description: 'Retorna os dados de um usuário específico. Admins podem visualizar qualquer perfil.',
   })
   @ApiResponse({ status: 200, description: 'Usuário encontrado' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
   async findOne(@Param('id') id: string, @Request() req) {
     const userId = req.user.userId;
-    if (userId !== id) {
+    
+    // Verificar se é admin ou se está visualizando sua própria conta
+    const isAdmin = await this.userRoleService.hasRole(userId, 'admin');
+    if (userId !== id && !isAdmin) {
       throw new ForbiddenException('Você só pode visualizar seu próprio perfil');
     }
+    
     return this.userService.findById(id);
   }
 
@@ -262,9 +273,13 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
   async remove(@Param('id') id: string, @Request() req) {
     const userId = req.user.userId;
-    if (userId !== id) {
+    
+    // Verificar se é admin ou se está deletando a própria conta
+    const isAdmin = await this.userRoleService.hasRole(userId, 'admin');
+    if (userId !== id && !isAdmin) {
       throw new ForbiddenException('Você só pode deletar sua própria conta');
     }
+    
     return this.userService.delete(id);
   }
 

@@ -23,6 +23,7 @@ import { AssignmentSubmissionModule } from './application/assignment-submission/
 import { ReviewModule } from './application/review/review.module';
 import { CertificateModule } from './application/certificate/certificate.module';
 import { JwtAuthGuard } from './infrastructure/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './infrastructure/auth/guards/roles.guard';
 import { HealthController } from './presentation/controllers/health/health.controller';
 
 @Module({
@@ -55,6 +56,10 @@ import { HealthController } from './presentation/controllers/health/health.contr
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

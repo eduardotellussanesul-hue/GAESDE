@@ -43,8 +43,7 @@ export const CertificateSchema = new Schema<CertificateDocument>(
   },
 );
 
-CertificateSchema.index({ enrollment_id: 1 }, { unique: true });
-CertificateSchema.index({ verification_code: 1 }, { unique: true });
+// unique indexes for enrollment_id and verification_code already declared in schema fields
 CertificateSchema.index({ user_id: 1 });
 
 @Injectable()
