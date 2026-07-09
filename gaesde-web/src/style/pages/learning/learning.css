@@ -299,6 +299,44 @@
   gap: 10px;
 }
 
+.quiz-review-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.quiz-review-card {
+  border: 1px solid rgba(81, 97, 119, 0.16);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.quiz-review-options {
+  display: grid;
+  gap: 6px;
+}
+
+.quiz-review-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 8px 10px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.quiz-review-option--correct {
+  border-color: rgba(22, 163, 74, 0.45);
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.quiz-review-option--selected {
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(59, 130, 246, 0.12);
+}
+
 .learning-certificate-trigger {
   justify-self: start;
   display: inline-flex;

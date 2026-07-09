@@ -1,4 +1,4 @@
-import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAnswerInput, QuizAttemptResult } from '../entities/quiz';
+import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAnswerInput, QuizAttemptResult, QuizAttemptSummary } from '../entities/quiz';
 
 export interface QuizRepository {
   getFullQuizByContent(token: string, contentId: string): Promise<FullQuiz | null>;
@@ -13,4 +13,5 @@ export interface QuizRepository {
   startQuizAttempt(token: string, quizId: string): Promise<{ id: string }>;
   submitQuizAttempt(token: string, attemptId: string, answers: QuizAnswerInput[]): Promise<QuizAttemptResult>;
   getQuizAttemptResults(token: string, attemptId: string): Promise<FullAttemptResult>;
+  listMyQuizAttempts(token: string): Promise<QuizAttemptSummary[]>;
 }

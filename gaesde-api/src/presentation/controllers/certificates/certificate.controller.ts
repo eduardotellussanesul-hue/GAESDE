@@ -39,6 +39,33 @@ export class CertificateController {
     return this.certificateService.generateCertificateForUser(userId, enrollmentId);
   }
 
+  @Post('regenerate/:enrollmentId')
+  @Roles('admin')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Regenerar certificado',
+    description: 'Regenera o certificado de uma matrícula, substituindo o registro anterior. Apenas administradores.',
+  })
+  @ApiResponse({ status: 201, description: 'Certificado regenerado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Curso ainda não concluído' })
+  async regenerate(@Param('enrollmentId') enrollmentId: string) {
+    return this.certificateService.regenerateCertificate(enrollmentId);
+  }
+
+  @Post('my-enrollments/:enrollmentId/regenerate')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Regenerar meu certificado',
+    description: 'Regenera o certificado da matrícula do usuário autenticado, substituindo o certificado anterior.',
+  })
+  @ApiResponse({ status: 201, description: 'Certificado regenerado com sucesso' })
+  @ApiResponse({ status: 403, description: 'Matrícula não pertence ao usuário autenticado' })
+  @ApiResponse({ status: 400, description: 'Curso ainda não concluído' })
+  async regenerateMyCertificate(@Param('enrollmentId') enrollmentId: string, @Request() req) {
+    const userId = req.user.userId;
+    return this.certificateService.regenerateCertificateForUser(userId, enrollmentId);
+  }
+
   @Get('user')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({

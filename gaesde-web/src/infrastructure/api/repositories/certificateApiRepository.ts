@@ -21,4 +21,12 @@ export class CertificateApiRepository implements CertificateRepository {
     });
     return mapCertificate(response);
   }
+
+  async regenerateMyCertificate(token: string, enrollmentId: string): Promise<Certificate> {
+    const response = await apiClient.request(`/certificates/my-enrollments/${enrollmentId}/regenerate`, {
+      method: 'POST',
+      authToken: token,
+    });
+    return mapCertificate(response);
+  }
 }

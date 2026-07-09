@@ -1,4 +1,4 @@
-import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAttemptResult } from '../../../domain/entities/quiz';
+import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAttemptResult, QuizAttemptSummary } from '../../../domain/entities/quiz';
 import { asBoolean, asNullableString, asNumber, asOptionalString, asRecord, asString } from './mapperUtils';
 
 export function mapOption(input: unknown): QuestionOption {
@@ -62,21 +62,25 @@ export function mapAttemptResult(input: unknown): QuizAttemptResult {
   };
 }
 
+export function mapQuizAttemptSummary(input: unknown): QuizAttemptSummary {
+  const item = asRecord(input);
+  return {
+    id: asString(item.id),
+    quizId: asString(item.quizId),
+    userId: asString(item.userId),
+    enrollmentId: asString(item.enrollmentId),
+    status: asString(item.status),
+    startedAt: asOptionalString(item.startedAt),
+    submittedAt: asNullableString(item.submittedAt),
+    totalScore: typeof item.totalScore === 'number' ? item.totalScore : null,
+    isPassed: typeof item.isPassed === 'boolean' ? item.isPassed : null,
+  };
+}
+
 export function mapFullAttemptResult(input: unknown): FullAttemptResult {
   const item = asRecord(input);
-  const attempt = asRecord(item.attempt);
   return {
-    attempt: {
-      id: asString(attempt.id),
-      quizId: asString(attempt.quizId),
-      userId: asString(attempt.userId),
-      enrollmentId: asString(attempt.enrollmentId),
-      status: asString(attempt.status),
-      startedAt: asOptionalString(attempt.startedAt),
-      submittedAt: asNullableString(attempt.submittedAt),
-      totalScore: typeof attempt.totalScore === 'number' ? attempt.totalScore : null,
-      isPassed: typeof attempt.isPassed === 'boolean' ? attempt.isPassed : null,
-    },
+    attempt: mapQuizAttemptSummary(item.attempt),
     answers: Array.isArray(item.answers)
       ? item.answers.map((answer) => {
           const answerItem = asRecord(answer);

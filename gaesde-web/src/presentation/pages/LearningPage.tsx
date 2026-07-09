@@ -227,6 +227,34 @@ export function LearningPage() {
             .map(async (content) => [content.id, await quizRepository.getFullQuizByContent(session.accessToken, content.id)] as const),
         );
 
+        const quizMapEntries = quizEntries
+          .filter((entry): entry is readonly [string, FullQuiz] => Boolean(entry[1]))
+          .map(([contentId, quiz]) => [contentId, quiz] as const);
+
+        const attempts = await quizRepository.listMyQuizAttempts(session.accessToken);
+        const latestAttemptByContent = new Map<string, string>();
+
+        for (const [contentId, quiz] of quizMapEntries) {
+          const attemptForQuiz = attempts
+            .filter((attempt) => attempt.quizId === quiz.id && attempt.status === 'finished')
+            .sort((a, b) => {
+              const aTime = Date.parse(a.submittedAt ?? a.startedAt ?? '');
+              const bTime = Date.parse(b.submittedAt ?? b.startedAt ?? '');
+              return bTime - aTime;
+            })[0];
+
+          if (attemptForQuiz) {
+            latestAttemptByContent.set(contentId, attemptForQuiz.id);
+          }
+        }
+
+        const attemptResults = await Promise.all(
+          Array.from(latestAttemptByContent.entries()).map(async ([contentId, attemptId]) => {
+            const result = await quizRepository.getQuizAttemptResults(session.accessToken, attemptId);
+            return [contentId, result] as const;
+          }),
+        );
+
         if (!mounted) {
           return;
         }
@@ -235,11 +263,10 @@ export function LearningPage() {
         setContentsByModule(Object.fromEntries(contentEntries));
         setQuizzesByContent(
           Object.fromEntries(
-            quizEntries
-              .filter((entry): entry is readonly [string, FullQuiz] => Boolean(entry[1]))
-              .map(([contentId, quiz]) => [contentId, quiz]),
+            quizMapEntries,
           ),
         );
+        setQuizResults(Object.fromEntries(attemptResults));
         setReviews(reviewsResult);
         setReviewStats(reviewStatsResult);
         setProgress(progressResult);
@@ -267,6 +294,8 @@ export function LearningPage() {
   }
 
   const isStudentView = !session.isAdmin && !session.isInstructor;
+  const currentProgressPercentage = progress?.progressPercentage ?? selectedEnrollment?.progressPercentage ?? 0;
+  const canGenerateCourseCertificate = Boolean(selectedEnrollment && (selectedEnrollment.isCompleted || currentProgressPercentage >= 100));
 
   const refreshLearningState = async (preferredCourseId = selectedCourseId) => {
     const [enrollmentsResult, certificatesResult, assignmentsResult] = await Promise.all([
@@ -615,6 +644,53 @@ export function LearningPage() {
     }
   };
 
+  const ensureFreshCertificate = async (certificate: Certificate): Promise<Certificate> => {
+    if (!selectedEnrollment) {
+      return certificate;
+    }
+
+    const freshCertificate = await certificateRepository.regenerateMyCertificate(session.accessToken, selectedEnrollment.id);
+    setMyCertificates((previous) => {
+      const withoutOld = previous.filter((item) => item.id !== certificate.id && item.enrollmentId !== freshCertificate.enrollmentId);
+      return [freshCertificate, ...withoutOld];
+    });
+    setActiveCertificate(freshCertificate);
+    return freshCertificate;
+  };
+
+  const openCertificateInNewTab = (certificate: Certificate) => {
+    window.open(certificate.certificateUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenCertificateLink = async () => {
+    if (!activeCertificate) {
+      return;
+    }
+
+    setCertificateLoading(true);
+    setMessage(null);
+
+    try {
+      let certificateToOpen = activeCertificate;
+      let response = await fetch(certificateToOpen.certificateUrl, { method: 'GET' });
+
+      if (!response.ok && [401, 403, 404].includes(response.status)) {
+        certificateToOpen = await ensureFreshCertificate(certificateToOpen);
+        response = await fetch(certificateToOpen.certificateUrl, { method: 'GET' });
+      }
+
+      if (!response.ok) {
+        throw new Error('Falha ao abrir certificado.');
+      }
+
+      openCertificateInNewTab(certificateToOpen);
+    } catch (error) {
+      setMessage(getErrorMessage(error));
+    } finally {
+      setCertificateLoading(false);
+    }
+  };
+
   const handleDownloadCertificate = async () => {
     if (!activeCertificate) {
       return;
@@ -624,7 +700,14 @@ export function LearningPage() {
     setMessage(null);
 
     try {
-      const response = await fetch(activeCertificate.certificateUrl);
+      let certificateToDownload = activeCertificate;
+      let response = await fetch(certificateToDownload.certificateUrl);
+
+      if (!response.ok && [401, 403, 404].includes(response.status)) {
+        certificateToDownload = await ensureFreshCertificate(certificateToDownload);
+        response = await fetch(certificateToDownload.certificateUrl);
+      }
+
       if (!response.ok) {
         throw new Error('Falha ao baixar PDF do certificado.');
       }
@@ -632,7 +715,7 @@ export function LearningPage() {
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
       const downloadLink = document.createElement('a');
-      const certificateSlug = selectedCourse?.slug ?? activeCertificate.verificationCode;
+      const certificateSlug = selectedCourse?.slug ?? certificateToDownload.verificationCode;
       downloadLink.href = objectUrl;
       downloadLink.download = `certificado-${certificateSlug}.pdf`;
       document.body.appendChild(downloadLink);
@@ -724,6 +807,18 @@ export function LearningPage() {
                 {progress.progressPercentage === 100 && selectedEnrollment && !selectedEnrollment.isCompleted ? (
                   <button type="button" className="button" onClick={handleCompleteCourse} disabled={loading}>
                     Concluir curso
+                  </button>
+                ) : null}
+
+                {canGenerateCourseCertificate ? (
+                  <button
+                    type="button"
+                    className="button button--ghost learning-certificate-trigger"
+                    onClick={handleOpenCertificate}
+                    disabled={certificateLoading}
+                  >
+                    <span className="learning-certificate-trigger__icon" aria-hidden="true" />
+                    Certificado
                   </button>
                 ) : null}
               </div>
@@ -997,17 +1092,50 @@ export function LearningPage() {
                                       Resultado: {attemptResult.attempt.totalScore ?? 0}% · {attemptResult.attempt.isPassed ? 'Aprovado' : 'Reprovado'}
                                     </strong>
 
-                                    {(attemptResult.attempt.totalScore ?? 0) >= 100 && attemptResult.attempt.isPassed ? (
-                                      <button
-                                        type="button"
-                                        className="button button--ghost learning-certificate-trigger"
-                                        onClick={handleOpenCertificate}
-                                        disabled={certificateLoading}
-                                      >
-                                        <span className="learning-certificate-trigger__icon" aria-hidden="true" />
-                                        Certificado
-                                      </button>
-                                    ) : null}
+                                    <div className="quiz-review-stack">
+                                      {attemptResult.answers.map((answer) => {
+                                        const selectedOptionIdSet = new Set(answer.selectedOptionIds);
+
+                                        return (
+                                          <article key={answer.questionId} className="quiz-review-card">
+                                            <strong>{answer.questionText}</strong>
+
+                                            <div className="quiz-review-options">
+                                              {answer.options.map((option) => {
+                                                const isSelected = selectedOptionIdSet.has(option.id) || answer.selectedOptionId === option.id;
+
+                                                return (
+                                                  <div
+                                                    key={option.id}
+                                                    className={`quiz-review-option ${
+                                                      option.isCorrect
+                                                        ? 'quiz-review-option--correct'
+                                                        : isSelected
+                                                          ? 'quiz-review-option--selected'
+                                                          : ''
+                                                    }`}
+                                                  >
+                                                    <span>{option.text}</span>
+                                                    <small>
+                                                      {option.isCorrect
+                                                        ? 'Correta'
+                                                        : isSelected
+                                                          ? 'Sua resposta'
+                                                          : 'Alternativa'}
+                                                    </small>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+
+                                            {answer.textResponse ? (
+                                              <p className="muted">Resposta enviada: {answer.textResponse}</p>
+                                            ) : null}
+                                          </article>
+                                        );
+                                      })}
+                                    </div>
+
                                   </div>
                                 ) : null}
                               </div>
@@ -1191,14 +1319,14 @@ export function LearningPage() {
                 Download PDF
               </button>
 
-              <a
+              <button
+                type="button"
                 className="button button--ghost"
-                href={activeCertificate.certificateUrl}
-                target="_blank"
-                rel="noreferrer"
+                onClick={handleOpenCertificateLink}
+                disabled={certificateLoading}
               >
                 Abrir certificado
-              </a>
+              </button>
             </div>
           </section>
         </div>

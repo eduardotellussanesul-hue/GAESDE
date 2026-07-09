@@ -30,6 +30,47 @@ export class CertificateService {
       throw new CertificateAlreadyExistsException(enrollmentId);
     }
 
+    const context = await this.getGenerationContext(enrollmentId);
+    return this.createAndSaveCertificate(context.enrollmentId, context.user, context.course);
+  }
+
+  async generateCertificateForUser(userId: string, enrollmentId: string): Promise<any> {
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new Error('Enrollment not found');
+    }
+
+    if (enrollment.userId !== userId) {
+      throw new ForbiddenException('You can only generate certificates for your own enrollments');
+    }
+
+    return this.generateCertificate(enrollmentId);
+  }
+
+  async regenerateCertificate(enrollmentId: string): Promise<any> {
+    const existing = await this.certificateRepository.findByEnrollment(enrollmentId);
+    if (existing) {
+      await this.certificateRepository.delete(existing.id);
+    }
+
+    const context = await this.getGenerationContext(enrollmentId);
+    return this.createAndSaveCertificate(context.enrollmentId, context.user, context.course);
+  }
+
+  async regenerateCertificateForUser(userId: string, enrollmentId: string): Promise<any> {
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) {
+      throw new Error('Enrollment not found');
+    }
+
+    if (enrollment.userId !== userId) {
+      throw new ForbiddenException('You can only regenerate certificates for your own enrollments');
+    }
+
+    return this.regenerateCertificate(enrollmentId);
+  }
+
+  private async getGenerationContext(enrollmentId: string): Promise<{ enrollmentId: string; user: any; course: any }> {
     const enrollment = await this.enrollmentRepository.findById(enrollmentId);
     if (!enrollment) {
       throw new Error('Enrollment not found');
@@ -46,6 +87,10 @@ export class CertificateService {
       throw new Error('User or course not found');
     }
 
+    return { enrollmentId, user, course };
+  }
+
+  private async createAndSaveCertificate(enrollmentId: string, user: any, course: any): Promise<any> {
     const verificationCode = this.generateVerificationCode();
 
     const pdfUrl = await this.generateCertificatePdf(user, course, verificationCode);
@@ -58,19 +103,6 @@ export class CertificateService {
     );
     const saved = await this.certificateRepository.save(certificate);
     return this.mapToResponse(saved);
-  }
-
-  async generateCertificateForUser(userId: string, enrollmentId: string): Promise<any> {
-    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
-    if (!enrollment) {
-      throw new Error('Enrollment not found');
-    }
-
-    if (enrollment.userId !== userId) {
-      throw new ForbiddenException('You can only generate certificates for your own enrollments');
-    }
-
-    return this.generateCertificate(enrollmentId);
   }
 
   private async generateCertificatePdf(user: any, course: any, verificationCode: string): Promise<string> {
@@ -102,6 +134,8 @@ export class CertificateService {
         {
           folder: `certificates/${course.slug}`,
           public_id: `certificate-${verificationCode}`,
+          resource_type: 'raw',
+          type: 'upload',
         },
       );
 
@@ -121,6 +155,11 @@ export class CertificateService {
     const date = new Date().toLocaleDateString('pt-BR');
     const width = doc.page.width;
     const height = doc.page.height;
+    const horizontalPadding = 60;
+    const textWidth = width - (horizontalPadding * 2);
+    const footerY = height - 85;
+    const footerCodeY = height - 65;
+    const footerVerifyY = height - 50;
 
     // Borda dourada
     doc.save();
@@ -139,7 +178,7 @@ export class CertificateService {
     doc.font('Helvetica-Bold')
       .fontSize(42)
       .fillColor('#2C3E50')
-      .text('CERTIFICADO', 0, 70, { align: 'center' });
+      .text('CERTIFICADO', horizontalPadding, 70, { align: 'center', width: textWidth });
 
     // Linha decorativa
     doc.moveTo(width / 2 - 150, 120)
@@ -152,34 +191,50 @@ export class CertificateService {
     doc.font('Helvetica')
       .fontSize(16)
       .fillColor('#7F8C8D')
-      .text('Certificamos que', 0, 140, { align: 'center' });
+      .text('Certificamos que', horizontalPadding, 140, { align: 'center', width: textWidth });
 
     // Nome do aluno
+    const fittedStudentName = this.fitTextToArea(doc, user.name, {
+      font: 'Helvetica-Bold',
+      maxFontSize: 48,
+      minFontSize: 24,
+      width: textWidth,
+      maxHeight: 55,
+    });
+
     doc.font('Helvetica-Bold')
-      .fontSize(48)
+      .fontSize(fittedStudentName.fontSize)
       .fillColor('#2C3E50')
-      .text(user.name, 0, 180, { align: 'center' });
+      .text(fittedStudentName.text, horizontalPadding, 180, { align: 'center', width: textWidth });
 
     // Texto de conclusão
     doc.font('Helvetica')
       .fontSize(14)
       .fillColor('#555')
-      .text('concluiu com sucesso o curso', 0, 250, { align: 'center' });
+      .text('concluiu com sucesso o curso', horizontalPadding, 250, { align: 'center', width: textWidth });
 
     // Nome do curso
+    const fittedCourseTitle = this.fitTextToArea(doc, course.title, {
+      font: 'Helvetica-Bold',
+      maxFontSize: 28,
+      minFontSize: 16,
+      width: textWidth,
+      maxHeight: 45,
+    });
+
     doc.font('Helvetica-Bold')
-      .fontSize(28)
+      .fontSize(fittedCourseTitle.fontSize)
       .fillColor('#4A90D9')
-      .text(course.title, 0, 290, { align: 'center' });
+      .text(fittedCourseTitle.text, horizontalPadding, 290, { align: 'center', width: textWidth });
 
     // Descrição
     if (course.description) {
       doc.font('Helvetica')
         .fontSize(12)
         .fillColor('#555')
-        .text(course.description.substring(0, 100), 0, 340, {
+        .text(course.description.substring(0, 100), horizontalPadding, 340, {
           align: 'center',
-          width: width - 100,
+          width: textWidth,
         });
     }
 
@@ -187,22 +242,73 @@ export class CertificateService {
     doc.font('Helvetica')
       .fontSize(14)
       .fillColor('#555')
-      .text(`Concluído em: ${date}`, 0, height - 100, { align: 'center' });
+      .text(`Concluído em: ${date}`, horizontalPadding, footerY, { align: 'center', width: textWidth });
 
     // Rodapé
     doc.font('Helvetica')
       .fontSize(10)
       .fillColor('#95A5A6')
-      .text(`Código: ${verificationCode}`, 50, height - 40);
+      .text(`Código: ${verificationCode}`, horizontalPadding, footerCodeY, {
+        width: textWidth,
+      });
     
-    doc.text('GAESDE', width - 50, height - 40, { align: 'right' });
+    doc.text('GAESDE', horizontalPadding, footerCodeY, { align: 'right', width: textWidth });
 
     doc.font('Helvetica')
       .fontSize(8)
       .fillColor('#95A5A6')
-      .text(`Verifique em: /certificates/verify/${verificationCode}`, 0, height - 20, { align: 'center' });
+      .text(`Verifique em: /certificates/verify/${verificationCode}`, horizontalPadding, footerVerifyY, {
+        align: 'center',
+        width: textWidth,
+      });
 
     doc.restore();
+  }
+
+  private fitTextToArea(
+    doc: PDFKit.PDFDocument,
+    rawText: string,
+    options: {
+      font: string;
+      maxFontSize: number;
+      minFontSize: number;
+      width: number;
+      maxHeight: number;
+    },
+  ): { text: string; fontSize: number } {
+    const sourceText = (rawText ?? '').trim() || '-';
+
+    doc.font(options.font);
+
+    for (let size = options.maxFontSize; size >= options.minFontSize; size -= 1) {
+      doc.fontSize(size);
+      const textHeight = doc.heightOfString(sourceText, {
+        width: options.width,
+        align: 'center',
+      });
+
+      if (textHeight <= options.maxHeight) {
+        return { text: sourceText, fontSize: size };
+      }
+    }
+
+    doc.fontSize(options.minFontSize);
+    let trimmedText = sourceText;
+
+    while (trimmedText.length > 3) {
+      trimmedText = trimmedText.slice(0, -1).trimEnd();
+      const candidate = `${trimmedText}...`;
+      const candidateHeight = doc.heightOfString(candidate, {
+        width: options.width,
+        align: 'center',
+      });
+
+      if (candidateHeight <= options.maxHeight) {
+        return { text: candidate, fontSize: options.minFontSize };
+      }
+    }
+
+    return { text: '...', fontSize: options.minFontSize };
   }
 
   private generateVerificationCode(): string {

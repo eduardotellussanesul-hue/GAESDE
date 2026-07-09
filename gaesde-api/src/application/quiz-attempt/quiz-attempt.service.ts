@@ -60,7 +60,7 @@ export class QuizAttemptService {
       throw new Error('User is not enrolled in this course');
     }
 
-    if (!enrollment.isActive) {
+    if (!enrollment.isActive && !enrollment.isCompleted) {
       throw new EnrollmentNotActiveException(enrollment.id);
     }
 

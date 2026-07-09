@@ -4,4 +4,5 @@ export interface CertificateRepository {
   listMyCertificates(token: string): Promise<Certificate[]>;
   generateCertificate(token: string, enrollmentId: string): Promise<Certificate>;
   generateMyCertificate(token: string, enrollmentId: string): Promise<Certificate>;
+  regenerateMyCertificate(token: string, enrollmentId: string): Promise<Certificate>;
 }

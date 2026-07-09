@@ -52,6 +52,18 @@ export type QuizAttemptResult = {
   earnedPoints: number;
 };
 
+export type QuizAttemptSummary = {
+  id: string;
+  quizId: string;
+  userId: string;
+  enrollmentId: string;
+  status: string;
+  startedAt?: string;
+  submittedAt?: string | null;
+  totalScore?: number | null;
+  isPassed?: boolean | null;
+};
+
 export type AttemptAnswerResult = {
   questionId: string;
   questionText: string;
@@ -69,16 +81,6 @@ export type AttemptAnswerResult = {
 };
 
 export type FullAttemptResult = {
-  attempt: {
-    id: string;
-    quizId: string;
-    userId: string;
-    enrollmentId: string;
-    status: string;
-    startedAt?: string;
-    submittedAt?: string | null;
-    totalScore?: number | null;
-    isPassed?: boolean | null;
-  };
+  attempt: QuizAttemptSummary;
   answers: AttemptAnswerResult[];
 };

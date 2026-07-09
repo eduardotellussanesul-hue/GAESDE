@@ -15,11 +15,20 @@ export class CloudinaryService {
 
   async uploadFile(
     file: Express.Multer.File,
-    options?: { folder?: string; public_id?: string },
+    options?: {
+      folder?: string;
+      public_id?: string;
+      resource_type?: 'image' | 'video' | 'raw' | 'auto';
+      type?: 'upload' | 'private' | 'authenticated';
+    },
   ): Promise<{ url: string; publicId: string }> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { ...options, resource_type: 'auto' },
+        {
+          ...options,
+          resource_type: options?.resource_type ?? 'auto',
+          type: options?.type ?? 'upload',
+        },
         (error, result) => {
           if (error) return reject(new BadRequestException('Upload failed'));
           if (!result) return reject(new BadRequestException('Upload failed - no result'));

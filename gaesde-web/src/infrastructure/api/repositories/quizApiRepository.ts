@@ -1,8 +1,8 @@
-import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAnswerInput, QuizAttemptResult } from '../../../domain/entities/quiz';
+import type { FullAttemptResult, FullQuiz, Question, QuestionOption, Quiz, QuizAnswerInput, QuizAttemptResult, QuizAttemptSummary } from '../../../domain/entities/quiz';
 import type { QuizRepository } from '../../../domain/repositories/quizRepository';
 import { apiClient } from '../client';
 import { asRecord, asString } from '../mappers/mapperUtils';
-import { mapAttemptResult, mapFullAttemptResult, mapFullQuiz, mapOption, mapQuestion, mapQuiz } from '../mappers/quizMapper';
+import { mapAttemptResult, mapFullAttemptResult, mapFullQuiz, mapOption, mapQuestion, mapQuiz, mapQuizAttemptSummary } from '../mappers/quizMapper';
 
 export class QuizApiRepository implements QuizRepository {
   async getFullQuizByContent(token: string, contentId: string): Promise<FullQuiz | null> {
@@ -89,5 +89,10 @@ export class QuizApiRepository implements QuizRepository {
   async getQuizAttemptResults(token: string, attemptId: string): Promise<FullAttemptResult> {
     const response = await apiClient.request(`/quiz-attempts/${attemptId}/results`, { method: 'GET', authToken: token });
     return mapFullAttemptResult(response);
+  }
+
+  async listMyQuizAttempts(token: string): Promise<QuizAttemptSummary[]> {
+    const response = await apiClient.request<unknown[]>('/quiz-attempts/user', { method: 'GET', authToken: token });
+    return response.map(mapQuizAttemptSummary);
   }
 }
