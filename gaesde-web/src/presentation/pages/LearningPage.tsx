@@ -8,6 +8,7 @@ import { EnrollmentApiRepository } from '../../infrastructure/api/repositories/e
 import { ModuleApiRepository } from '../../infrastructure/api/repositories/moduleApiRepository';
 import { QuizApiRepository } from '../../infrastructure/api/repositories/quizApiRepository';
 import { ReviewApiRepository } from '../../infrastructure/api/repositories/reviewApiRepository';
+import { askGeminiTutor } from '../../infrastructure/ai/geminiChat';
 import type {
   AssignmentSubmission,
   Certificate,
@@ -25,6 +26,7 @@ import type {
   ReviewStats,
 } from '../../domain/entities/lms';
 import { getErrorMessage } from '../utils/errorMessage';
+import { env } from '../../core/config/env';
 
 const assignmentRepository = new AssignmentApiRepository();
 const certificateRepository = new CertificateApiRepository();
@@ -85,6 +87,15 @@ export function LearningPage() {
   const [activeCertificate, setActiveCertificate] = useState<Certificate | null>(null);
   const [certificateLoading, setCertificateLoading] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: '5', comment: '' });
+  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
+    {
+      role: 'assistant',
+      text: 'Oi. Sou seu tutor virtual. Pergunte sobre o conteúdo do curso.',
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -729,6 +740,40 @@ export function LearningPage() {
     }
   };
 
+  const handleChatSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedInput = chatInput.trim();
+    if (!trimmedInput || chatLoading) {
+      return;
+    }
+
+    const nextHistory = [...chatMessages, { role: 'user' as const, text: trimmedInput }];
+
+    setChatMessages(nextHistory);
+    setChatInput('');
+    setChatLoading(true);
+    setChatError(null);
+
+    try {
+      const assistantReply = await askGeminiTutor({
+        userMessage: trimmedInput,
+        history: nextHistory,
+        context: {
+          studentName: session.user.name,
+          courseTitle: selectedCourse?.title,
+          progressPercentage: currentProgressPercentage,
+        },
+      });
+
+      setChatMessages((previous) => [...previous, { role: 'assistant', text: assistantReply }]);
+    } catch (error) {
+      setChatError(getErrorMessage(error));
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   return (
     <div className="page">
       <section className="learning-hero">
@@ -754,7 +799,7 @@ export function LearningPage() {
 
       {message ? <p className="info">{message}</p> : null}
 
-      <section className="learning-layout">
+      <section className={`learning-layout ${isStudentView ? 'learning-layout--student' : ''}`}>
         <aside className="panel learning-sidebar">
           <h2>Catálogo disponível</h2>
           <div className="learning-courses">
@@ -867,6 +912,7 @@ export function LearningPage() {
                         const videoUrl = content.video?.videoUrl ?? '';
                         const youtubeEmbedUrl = videoUrl ? toYouTubeEmbedUrl(videoUrl) : null;
                         const isContentMarked = Boolean(contentReadyToComplete[content.id]);
+                        const shouldHideQuizForm = Boolean(selectedEnrollment?.isCompleted && attemptResult);
 
                         const completionStatusLabel = content.type === 'text'
                           ? 'Leitura finalizada'
@@ -1028,63 +1074,67 @@ export function LearningPage() {
                             {quiz ? (
                               <div className="learning-quiz-box">
                                 <h4>Quiz</h4>
-                                <div className="quiz-question-stack">
-                                  {quiz.questions.map((question) => (
-                                    <fieldset key={question.id} className="quiz-question-card">
-                                      <legend>{question.questionText}</legend>
+                                {!shouldHideQuizForm ? (
+                                  <>
+                                    <div className="quiz-question-stack">
+                                      {quiz.questions.map((question) => (
+                                        <fieldset key={question.id} className="quiz-question-card">
+                                          <legend>{question.questionText}</legend>
 
-                                      {question.type === 'essay' ? (
-                                        <textarea
-                                          rows={4}
-                                          value={typeof quizAnswers[content.id]?.[question.id] === 'string' ? quizAnswers[content.id]?.[question.id] : ''}
-                                          onChange={(event) => handleQuizTextChange(content.id, question.id, event.target.value)}
-                                        />
-                                      ) : question.type === 'multiple_choice' ? (
-                                        <div className="quiz-option-stack">
-                                          {(question.options ?? []).map((option) => {
-                                            const currentValue = quizAnswers[content.id]?.[question.id];
-                                            const selectedOptions = Array.isArray(currentValue)
-                                              ? currentValue
-                                              : typeof currentValue === 'string' && currentValue
-                                                ? [currentValue]
-                                                : [];
+                                          {question.type === 'essay' ? (
+                                            <textarea
+                                              rows={4}
+                                              value={typeof quizAnswers[content.id]?.[question.id] === 'string' ? quizAnswers[content.id]?.[question.id] : ''}
+                                              onChange={(event) => handleQuizTextChange(content.id, question.id, event.target.value)}
+                                            />
+                                          ) : question.type === 'multiple_choice' ? (
+                                            <div className="quiz-option-stack">
+                                              {(question.options ?? []).map((option) => {
+                                                const currentValue = quizAnswers[content.id]?.[question.id];
+                                                const selectedOptions = Array.isArray(currentValue)
+                                                  ? currentValue
+                                                  : typeof currentValue === 'string' && currentValue
+                                                    ? [currentValue]
+                                                    : [];
 
-                                            return (
-                                              <label key={option.id} className="quiz-option-row">
-                                                <input
-                                                  type="checkbox"
-                                                  value={option.id}
-                                                  checked={selectedOptions.includes(option.id)}
-                                                  onChange={(event) => handleQuizMultipleOptionToggle(content.id, question.id, option.id, event.target.checked)}
-                                                />
-                                                <span>{option.optionText}</span>
-                                              </label>
-                                            );
-                                          })}
-                                        </div>
-                                      ) : (
-                                        <div className="quiz-option-stack">
-                                          {(question.options ?? []).map((option) => (
-                                            <label key={option.id} className="quiz-option-row">
-                                              <input
-                                                type="radio"
-                                                name={`${content.id}-${question.id}`}
-                                                value={option.id}
-                                                checked={quizAnswers[content.id]?.[question.id] === option.id}
-                                                onChange={(event) => handleQuizSingleOptionChange(content.id, question.id, event.target.value)}
-                                              />
-                                              <span>{option.optionText}</span>
-                                            </label>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </fieldset>
-                                  ))}
-                                </div>
+                                                return (
+                                                  <label key={option.id} className="quiz-option-row">
+                                                    <input
+                                                      type="checkbox"
+                                                      value={option.id}
+                                                      checked={selectedOptions.includes(option.id)}
+                                                      onChange={(event) => handleQuizMultipleOptionToggle(content.id, question.id, option.id, event.target.checked)}
+                                                    />
+                                                    <span>{option.optionText}</span>
+                                                  </label>
+                                                );
+                                              })}
+                                            </div>
+                                          ) : (
+                                            <div className="quiz-option-stack">
+                                              {(question.options ?? []).map((option) => (
+                                                <label key={option.id} className="quiz-option-row">
+                                                  <input
+                                                    type="radio"
+                                                    name={`${content.id}-${question.id}`}
+                                                    value={option.id}
+                                                    checked={quizAnswers[content.id]?.[question.id] === option.id}
+                                                    onChange={(event) => handleQuizSingleOptionChange(content.id, question.id, event.target.value)}
+                                                  />
+                                                  <span>{option.optionText}</span>
+                                                </label>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </fieldset>
+                                      ))}
+                                    </div>
 
-                                <button type="button" className="button" onClick={() => handleQuizSubmit(content.id)} disabled={loading}>
-                                  Enviar quiz
-                                </button>
+                                    <button type="button" className="button" onClick={() => handleQuizSubmit(content.id)} disabled={loading}>
+                                      Enviar quiz
+                                    </button>
+                                  </>
+                                ) : null}
 
                                 {attemptResult ? (
                                   <div className="quiz-result-box">
@@ -1275,6 +1325,47 @@ export function LearningPage() {
             </section>
           ) : null}
         </div>
+
+        {isStudentView ? (
+          <aside className="panel learning-chat-sidebar learning-ai-chat-panel">
+            <div className="panel-header-inline">
+              <h2>Tutor IA </h2>
+              <small className="muted">
+                {env.geminiApiKey ? 'Online' : 'Configure VITE_GEMINI_API_KEY'}
+              </small>
+            </div>
+
+            <div className="learning-ai-chat__messages" aria-live="polite">
+              {chatMessages.map((item, index) => (
+                <article
+                  key={`${item.role}-${index}`}
+                  className={`learning-ai-chat__bubble learning-ai-chat__bubble--${item.role}`}
+                >
+                  <strong>{item.role === 'assistant' ? 'Tutor' : 'Você'}</strong>
+                  <p>{item.text}</p>
+                </article>
+              ))}
+
+              {chatLoading ? (
+                <p className="muted">Tutor está digitando...</p>
+              ) : null}
+            </div>
+
+            {chatError ? <p className="learning-ai-chat__error">{chatError}</p> : null}
+
+            <form className="learning-ai-chat__form" onSubmit={handleChatSubmit}>
+              <textarea
+                rows={3}
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                placeholder="Ex.: Me explique o conceito de polimorfismo."
+              />
+              <button type="submit" className="button" disabled={chatLoading || !chatInput.trim() || !env.geminiApiKey}>
+                Enviar
+              </button>
+            </form>
+          </aside>
+        ) : null}
       </section>
 
       {isCertificateModalOpen && activeCertificate ? (

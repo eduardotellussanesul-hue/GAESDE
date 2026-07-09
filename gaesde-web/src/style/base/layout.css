@@ -3,6 +3,10 @@
   margin: 30px auto 56px;
 }
 
+.container--learning {
+  width: min(1460px, 100% - 32px);
+}
+
 .page {
   display: grid;
   gap: 24px;

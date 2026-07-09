@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LoginPage } from '../pages/LoginPage';
 import { HomePage } from '../pages/HomePage';
@@ -12,10 +12,13 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { Navbar } from '../components/layout/Navbar';
 
 function PrivateLayout() {
+  const location = useLocation();
+  const isLearningRoute = location.pathname.startsWith('/learning');
+
   return (
     <>
       <Navbar />
-      <main className="container">
+      <main className={`container ${isLearningRoute ? 'container--learning' : ''}`}>
         <Outlet />
       </main>
     </>

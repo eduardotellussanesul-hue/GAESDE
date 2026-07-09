@@ -30,14 +30,24 @@
   align-items: start;
 }
 
+.learning-layout--student {
+  grid-template-columns: minmax(210px, 0.9fr) minmax(0, 1.45fr) minmax(250px, 1fr);
+}
+
+.learning-layout--student > * {
+  min-width: 0;
+}
+
 .learning-sidebar {
   position: sticky;
   top: 96px;
+  min-width: 0;
 }
 
 .learning-main {
   display: grid;
   gap: 20px;
+  min-width: 0;
 }
 
 .learning-courses,
@@ -342,6 +352,21 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  border-color: rgba(29, 78, 216, 0.7);
+}
+
+.learning-certificate-trigger.button--ghost:hover {
+  color: #ffffff;
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  border-color: rgba(30, 64, 175, 0.85);
+}
+
+.learning-certificate-trigger.button--ghost:disabled {
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(96, 165, 250, 0.75);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .learning-certificate-trigger__icon {
@@ -378,6 +403,80 @@
 .learning-community-students {
   display: grid;
   gap: 12px;
+}
+
+.learning-ai-chat-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.learning-chat-sidebar {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+  min-width: 0;
+}
+
+.learning-ai-chat__messages {
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid rgba(81, 97, 119, 0.16);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(249, 251, 255, 0.94), rgba(236, 244, 252, 0.78));
+  display: grid;
+  gap: 10px;
+}
+
+.learning-ai-chat__bubble {
+  max-width: min(92%, 760px);
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(81, 97, 119, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+  display: grid;
+  gap: 4px;
+}
+
+.learning-ai-chat__bubble p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.learning-ai-chat__bubble--assistant {
+  justify-self: start;
+  border-color: rgba(59, 130, 246, 0.26);
+  background: rgba(239, 246, 255, 0.9);
+}
+
+.learning-ai-chat__bubble--user {
+  justify-self: end;
+  border-color: rgba(74, 144, 217, 0.32);
+  background: rgba(224, 242, 254, 0.95);
+}
+
+.learning-ai-chat__form {
+  display: grid;
+  gap: 8px;
+}
+
+.learning-ai-chat__form textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 88px;
+}
+
+.learning-ai-chat__form .button {
+  width: fit-content;
+}
+
+.learning-ai-chat__error {
+  margin: 0;
+  color: #9f1239;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.24);
+  border-radius: 12px;
+  padding: 8px 10px;
 }
 
 .learning-community-card {
@@ -454,6 +553,10 @@
   }
 
   .learning-sidebar {
+    position: static;
+  }
+
+  .learning-chat-sidebar {
     position: static;
   }
 
